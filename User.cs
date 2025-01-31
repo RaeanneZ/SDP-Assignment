@@ -1,17 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SDP_Assignment
+public class User : Observer
 {
-    public class User
+    public string Name { get; private set; }
+
+    public User(string name)
     {
-        public string Name { get; }
-        public User(string name)
-        {
-            Name = name;
-        }
+        Name = name;
+    }
+
+    public virtual void Notify(string message)
+    {
+        Console.WriteLine($"Notification for {Name}: {message}");
     }
 }
