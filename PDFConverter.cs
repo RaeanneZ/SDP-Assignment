@@ -6,12 +6,11 @@ using System.Threading.Tasks;
 
 namespace SDP_Assignment
 {
-    public class PDFConverter : FormatConverter
+    public class PDFConverter : IFormatConverter
     {
         public void Convert(string content)
         {
             Console.WriteLine("Converting document to PDF format...");
-            // Actual conversion logic to PDF format
             Console.WriteLine($"PDF Content: {content}");
         }
     }

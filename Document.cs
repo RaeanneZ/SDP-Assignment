@@ -11,7 +11,7 @@ namespace SDP_Assignment
         private DocumentState docState;
         private List<User> collaborators = new List<User>();
         private List<IObserver> observerList = new List<IObserver>();
-        private FormatConverter formatConverter;
+        private IFormatConverter formatConverter;
         private string title;
         private string content;
         private User owner;
@@ -112,20 +112,6 @@ namespace SDP_Assignment
         public bool IsAssociatedWithUser(User user)
         {
             return owner == user || collaborators.Contains(user) || approver == user;
-
-        public void SetFormatConverter(FormatConverter fc)
-        {
-            formatConverter = fc;
-        }
-
-        public void ConvertDocument()
-        {
-            if (formatConverter == null)
-            {
-                Console.WriteLine("No format converter set.");
-                return;
-            }
-            formatConverter.Convert(content);
         }
     }
 }

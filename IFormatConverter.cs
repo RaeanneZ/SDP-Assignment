@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SDP_Assignment
 {
-    public interface FormatConverter
+    public interface IFormatConverter
     {
         void Convert(string content);
     }
