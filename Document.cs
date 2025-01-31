@@ -11,7 +11,7 @@ namespace SDP_Assignment
         private DocState docState;
         private List<User> collaborators = new List<User>();
         private List<IObserver> observerList = new List<IObserver>();
-        private FormatConverter formatConverter;
+        private IFormatConverter formatConverter;
         private string title;
         private string content;
         private User owner;
