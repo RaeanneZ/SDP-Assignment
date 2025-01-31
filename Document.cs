@@ -8,7 +8,7 @@ namespace SDP_Assignment
 {
     class Document
     {
-        private DocumentState docState;
+        private DocState docState;
         private List<User> collaborators = new List<User>();
         private List<IObserver> observerList = new List<IObserver>();
         private FormatConverter formatConverter;
@@ -16,6 +16,36 @@ namespace SDP_Assignment
         private string content;
         private User owner;
         private User approver;
+
+        // doc state
+        private DocState draftState;
+        private DocState reviewState;
+        private DocState approvedState;
+        private DocState rejectedState;
+        private DocState reviseState;
+
+        private DocState state;
+
+        private bool success = false;
+
+        public DocState DraftState { get { return draftState; } }
+        public DocState ReviewState { get { return reviewState; } }
+        public DocState ApprovedState { get { return approvedState; } }
+        public DocState RejectedState { get { return rejectedState; } }
+        public DocState ReviseState { get { return reviseState; } }
+
+        public bool Success { get; set; }
+
+        public Document()
+        {
+            draftState = new DraftState(this);
+            reviewState = new ReviewState(this);
+            approvedState = new ApprovedState(this);
+            rejectedState = new RejectedState(this);
+            reviseState = new ReviseState(this);
+
+            state = draftState;
+        }
 
         public string Title
         {
@@ -43,7 +73,14 @@ namespace SDP_Assignment
             this.title = title;
             this.owner = owner;
             content = "";
-            docState = new DraftState();
+
+            draftState = new DraftState(this);
+            reviewState = new ReviewState(this);
+            approvedState = new ApprovedState(this);
+            rejectedState = new RejectedState(this);
+            reviseState = new ReviseState(this);
+
+            state = draftState;
         }
 
         // This is for the document to add more components
@@ -52,21 +89,54 @@ namespace SDP_Assignment
             Content += $"\n\n{component}";
         }
 
-        public void SetState(DocumentState state)
+
+        public void SetState(DocState state)
         {
-            docState = state;
-            NotifyObservers($"State changed to {state.GetType().Name}.");
+            this.state = state;
         }
 
-        public void AddCollaborator(User user)
+        public void Submit(User user)
         {
-            if (Owner == user)
+            if (!collaborators.Contains(user))
             {
-                Console.WriteLine("Owner cannot add themselves as a collaborator.");
-                return;
+                state.submit(user);
             }
-            collaborators.Add(user);
-            NotifyObservers($"{user.Name} added as a collaborator.");
+            else
+            {
+                Console.WriteLine("Approver cannot be a collaborator, please select a new one.");
+            }
+        }
+        public void Approve()
+        {
+            state.approve();
+        }
+        public void Reject()
+        {
+            state.reject();
+        }
+        public void PushBack(string comment)
+        {
+            state.pushBack(comment);
+        }
+        public void Resubmit()
+        {
+            state.resubmit();
+        }
+        public void Edit(User collaborator)
+        {
+            state.edit(collaborator);
+        }
+
+        public void AddCollaborator(User collaborator)
+        {
+            if (!collaborators.Contains(collaborator) || collaborator != owner)
+            {
+                collaborators.Add(collaborator);
+            }
+            else
+            {
+                Console.WriteLine("User is already in collaborators!");
+            }
         }
 
         public void SetApprover(User user)
@@ -98,20 +168,12 @@ namespace SDP_Assignment
             }
         }
 
-        public void Edit(string content, User user)
-        {
-            docState.Edit(this, content, user);
-        }
-        public void Submit(User user)
-        {
-            docState.Submit(this, user);
-        }
-
         public string CurrentStateName => docState.GetType().Name;
 
         public bool IsAssociatedWithUser(User user)
         {
             return owner == user || collaborators.Contains(user) || approver == user;
+        }
 
         public void SetFormatConverter(FormatConverter fc)
         {
