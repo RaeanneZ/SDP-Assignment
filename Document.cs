@@ -1,30 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 
-public class Document : Subject
+namespace SDP_Assignment
 {
-    private List<Observer> observers = new List<Observer>();
-    private DocState docState;
-    private IFormatConverter formatConverter;
-    private string title;
-    private string content;
-    private User owner;
-    private User approver;
+    public class Document : Subject
+    {
+        private List<Observer> observers = new List<Observer>();
+        private IFormatConverter formatConverter;
+        private string title;
+        private string content;
+        private User owner;
+        private User approver;
 
-    // doc state
-    private DocState draftState;
-    private DocState reviewState;
-    private DocState approvedState;
-    private DocState rejectedState;
-    private DocState reviseState;
+        // Document states
+        private DocState state;
+        private readonly DocState draftState;
+        private readonly DocState reviewState;
+        private readonly DocState approvedState;
+        private readonly DocState rejectedState;
+        private readonly DocState reviseState;
 
-    private DocState state;
-    private bool success = false;
-    
-    
-    public List<User> Collaborators { get; private set; }
-    
-    public string Title
+        public List<User> Collaborators { get; private set; }
+
+        public string Title
         {
             get { return title; }
         }
@@ -45,145 +43,187 @@ public class Document : Subject
             get { return approver; }
         }
 
-
-        public DocState DraftState { get { return draftState; } }
-        public DocState ReviewState { get { return reviewState; } }
-        public DocState ApprovedState { get { return approvedState; } }
-        public DocState RejectedState { get { return rejectedState; } }
-        public DocState ReviseState { get { return reviseState; } }
-
-        public bool Success { get; set; }
-
-    public Document(string title, string owner)
-    {
-        Title = title;
-        Owner = owner;
-        content = "";
-
-        Collaborators = new List<User>();
-        
-        draftState = new DraftState(this);
-        reviewState = new ReviewState(this);
-        approvedState = new ApprovedState(this);
-        rejectedState = new RejectedState(this);
-        reviseState = new ReviseState(this);
-
-        state = draftState;
-    }
-
-    public void AddCollaborator(User user)
-    {
-        Collaborators.Add(user);
-        RegisterObserver(user);
-    }
-
-    public void Edit(string content, User user)
-    {
-        if (Owner == user.Name || Collaborators.Contains(user))
+        public DocState DraftState
         {
-            Content = content;
-            NotifyObservers($"Document '{Title}' was edited by {user.Name}.");
-        }
-    }
-
-    public void SubmitApproval(User user)
-    {
-        if (user.Name == Owner)
-        {
-            NotifyObservers($"Document '{Title}' submitted for approval by {user.Name}.");
-        }
-    }
-
-    public void SetApprover(User user)
-    {
-        Approver = user;
-        RegisterObserver(user);
-        NotifyObservers($"Approver assigned: {user.Name} for document '{Title}'.");
-    }
-
-    public void SetState(string state)
-    {
-        NotifyObservers($"Document '{Title}' state changed to: {state}");
-    }
-
-    public void RegisterObserver(Observer observer)
-    {
-        if (!observers.Contains(observer))
-            observers.Add(observer);
-    }
-
-    public void RemoveObserver(Observer observer)
-    {
-        observers.Remove(observer);
-    }
-
-    public void NotifyObservers(string message)
-    {
-        foreach (var observer in observers)
-        {
-            observer.Notify(message);
-        }
-    }
-    
-    public bool IsOwnerOrCollaborator(User user)
-        {
-            return owner == user || collaborators.Contains(user);
-        }
-    
-     // This is for the document to add more components
-        public void AddComponent(string component)
-        {
-            Content += $"\n\n{component}";
+            get { return draftState; }
         }
 
-
-        public void SetState(DocState state)
+        public DocState ReviewState
         {
-            this.state = state;
+            get { return reviewState; }
         }
 
-        public void Submit(User user)
+        public DocState ApprovedState
         {
-            if (!collaborators.Contains(user))
+            get { return approvedState; }
+        }
+
+        public DocState RejectedState
+        {
+            get { return rejectedState; }
+        }
+
+        public DocState ReviseState
+        {
+            get { return reviseState; }
+        }
+
+        public Document(string title, User owner)
+        {
+            this.title = title;
+            this.owner = owner;
+            content = "";
+
+            Collaborators = new List<User>();
+
+            // Initialize states
+            draftState = new DraftState(this);
+            reviewState = new ReviewState(this);
+            approvedState = new ApprovedState(this);
+            rejectedState = new RejectedState(this);
+            reviseState = new ReviseState(this);
+
+            state = draftState;
+        }
+
+        public void AddCollaborator(User user)
+        {
+            if (user == owner)
             {
-                state.submit(user);
+                Console.WriteLine("Owner is already a collaborator.");
+                return;
+            }
+
+            if (!Collaborators.Contains(user))
+            {
+                Collaborators.Add(user);
+                RegisterObserver(user);
+                NotifyObservers(user.Name + " added as a collaborator to document '" + Title + "'.");
+            }
+        }
+
+        public void Edit(string newContent, User user)
+        {
+            if (IsOwnerOrCollaborator(user))
+            {
+                content = newContent;
+                NotifyObservers("Document '" + Title + "' was edited by " + user.Name + ".");
             }
             else
             {
-                Console.WriteLine("Approver cannot be a collaborator, please select a new one.");
+                Console.WriteLine("Only owner or collaborators can edit.");
             }
         }
+
+        public void SubmitForApproval(User user)
+        {
+            if (user != owner)
+            {
+                Console.WriteLine("Only the owner can submit for approval.");
+                return;
+            }
+
+            NotifyObservers("Document '" + Title + "' submitted for approval by " + user.Name + ".");
+            state.submit(user);
+        }
+
+        public void SetApprover(User user)
+        {
+            if (user == owner || Collaborators.Contains(user))
+            {
+                Console.WriteLine("Error: Approver cannot be the owner or a collaborator.");
+                return;
+            }
+
+            approver = user;
+            RegisterObserver(user);
+            NotifyObservers("Approver assigned: " + user.Name + " for document '" + Title + "'.");
+        }
+
+        public void SetState(DocState newState)
+        {
+            this.state = newState;
+            NotifyObservers("Document '" + Title + "' state changed to: " + newState.GetType().Name);
+        }
+
+        public void RegisterObserver(Observer observer)
+        {
+            if (!observers.Contains(observer))
+            {
+                observers.Add(observer);
+            }
+        }
+
+        public void RemoveObserver(Observer observer)
+        {
+            observers.Remove(observer);
+        }
+
+        public void NotifyObservers(string message)
+        {
+            foreach (Observer observer in observers)
+            {
+                observer.Notify(message);
+            }
+        }
+
+        public bool IsOwnerOrCollaborator(User user)
+        {
+            return owner == user || Collaborators.Contains(user);
+        }
+
         public void Approve()
         {
+            if (approver == null)
+            {
+                Console.WriteLine("No approver assigned.");
+                return;
+            }
+            if (state != reviewState)
+            {
+                Console.WriteLine("Document must be under review to be approved.");
+                return;
+            }
             state.approve();
         }
+
         public void Reject()
         {
+            if (approver == null)
+            {
+                Console.WriteLine("No approver assigned.");
+                return;
+            }
+            if (state != reviewState)
+            {
+                Console.WriteLine("Document must be under review to be rejected.");
+                return;
+            }
             state.reject();
         }
+
         public void PushBack(string comment)
         {
-            state.pushBack(comment);
+            if (state == reviewState)
+            {
+                state.pushBack(comment);
+            }
+            else
+            {
+                Console.WriteLine("Document must be in review state to be pushed back.");
+            }
         }
+
         public void Resubmit()
         {
-            state.resubmit();
-        }
-        public void Edit(User collaborator)
-        {
-            state.edit(collaborator);
-        }
-        
-         public string CurrentStateName => docState.GetType().Name;
-
-        public bool IsAssociatedWithUser(User user)
-        {
-            return owner == user || collaborators.Contains(user) || approver == user;
-        }
-
-        public void SetFormatConverter(FormatConverter fc)
-        {
-            formatConverter = fc;
+            if (state == reviseState || state == rejectedState)
+            {
+                state.resubmit();
+            }
+            else
+            {
+                Console.WriteLine("Only rejected or revised documents can be resubmitted.");
+            }
         }
 
         public void ConvertDocument()
@@ -194,7 +234,23 @@ public class Document : Subject
                 return;
             }
             formatConverter.Convert(content);
-        } 
+        }
+
+        public void SetFormatConverter(IFormatConverter converter)
+        {
+            formatConverter = converter;
+        }
+
+        public string CurrentStateName
+        {
+            get { return state.GetType().Name; }
+        }
+
+        public bool IsAssociatedWithUser(User user)
+        {
+            return owner == user || Collaborators.Contains(user) || approver == user;
+        }
     }
 }
+
 

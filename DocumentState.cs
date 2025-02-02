@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SDP_Assignment
 {
-    internal interface DocState
+    public interface DocState
     {
         public void add(User collaborator);
         public void submit(User collaborator);
