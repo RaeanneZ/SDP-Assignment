@@ -8,9 +8,13 @@ namespace SDP_Assignment
         private List<Observer> observers = new List<Observer>();
         private IFormatConverter formatConverter;
         private string title;
-        private string content;
         private User owner;
         private User approver;
+
+        // Document Content
+        private string header;
+        private string content;
+        private string footer;
 
         // Document states
         private DocState state;
@@ -25,12 +29,6 @@ namespace SDP_Assignment
         public string Title
         {
             get { return title; }
-        }
-
-        public string Content
-        {
-            get { return content; }
-            set { content = value; }
         }
 
         public User Owner
@@ -68,6 +66,19 @@ namespace SDP_Assignment
             get { return reviseState; }
         }
 
+        public string GetHeader
+        {
+            get { return header; }
+        }
+        public string GetContent
+        {
+            get { return content; }
+        }
+        public string GetFooter
+        {
+            get { return footer; }
+        }
+
         public Document(string title, User owner)
         {
             this.title = title;
@@ -85,6 +96,9 @@ namespace SDP_Assignment
 
             state = draftState;
         }
+
+    // This is for setting and getting the header, content and footer
+
 
         public void AddCollaborator(User user)
         {
@@ -250,7 +264,49 @@ namespace SDP_Assignment
         {
             return owner == user || Collaborators.Contains(user) || approver == user;
         }
+
+
+        // Get and set the content
+        public void SetHeader(string newHeader, User user)
+        {
+            if (IsOwnerOrCollaborator(user))
+            {
+                header = newHeader;
+                NotifyObservers($"Document '{Title}' header updated by {user.Name}.");
+            }
+            else
+            {
+                Console.WriteLine("Only owner or collaborators can edit.");
+            }
+        }
+
+        public void SetContent(string newContent, User user)
+        {
+            if (IsOwnerOrCollaborator(user))
+            {
+                content = newContent;
+                NotifyObservers($"Document '{Title}' content updated by {user.Name}.");
+            }
+            else
+            {
+                Console.WriteLine("Only owner or collaborators can edit.");
+            }
+        }
+
+        public void SetFooter(string newFooter, User user)
+        {
+            if (IsOwnerOrCollaborator(user))
+            {
+                footer = newFooter;
+                NotifyObservers($"Document '{Title}' footer updated by {user.Name}.");
+            }
+            else
+            {
+                Console.WriteLine("Only owner or collaborators can edit.");
+            }
+        }
     }
+}
 }
 
 
