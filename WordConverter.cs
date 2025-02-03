@@ -13,7 +13,7 @@ namespace SDP_Assignment
             Console.WriteLine("Converting document to Word format...");
 
             // Create a new file name with the format suffix
-            string newFileName = $"{document.Title}_Word.docx";
+            string newFileName = $"{document.Title}_Word";
 
             //Create a new document
             Document convertedDoc = new Document(newFileName, document.Owner);

@@ -335,6 +335,7 @@ namespace SDP_Assignment
             Document convertedDocument = document.ConvertDocument();
             documents.Add(convertedDocument);
 
+            ViewDocuments();
 
             Console.WriteLine("Document converted. Press Enter to continue.");
             Console.ReadLine();
