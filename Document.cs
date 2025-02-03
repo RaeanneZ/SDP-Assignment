@@ -66,17 +66,17 @@ namespace SDP_Assignment
             get { return reviseState; }
         }
 
-        public string GetHeader
+        public string GetHeader()
         {
-            get { return header; }
+            return header; 
         }
-        public string GetContent
+        public string GetContent()
         {
-            get { return content; }
+            return content; 
         }
-        public string GetFooter
+        public string GetFooter()
         {
-            get { return footer; }
+            return footer;
         }
 
         public Document(string title, User owner)
@@ -307,6 +307,6 @@ namespace SDP_Assignment
         }
     }
 }
-}
+
 
 

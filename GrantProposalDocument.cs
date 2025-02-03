@@ -10,7 +10,9 @@ namespace SDP_Assignment
     {
         public GrantProposalDocument(string title, User owner) : base(title, owner)
         {
-            Content = "Grant Proposal Header\n\nGrant Proposal Footer";
+            SetHeader("Grant Proposal Header", owner);
+            SetContent("This is the body of the grant proposal.", owner);
+            SetFooter("Grant Proposal Footer", owner);
         }
     }
 }

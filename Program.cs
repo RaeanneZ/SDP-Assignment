@@ -319,7 +319,7 @@ namespace SDP_Assignment
                 return;
             }
 
-            converter.Convert(document.Content);
+            converter.Convert(document.GetContent());
             Console.WriteLine("Document converted. Press Enter to continue.");
             Console.ReadLine();
         }
