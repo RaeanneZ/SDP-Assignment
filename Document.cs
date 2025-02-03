@@ -239,15 +239,15 @@ namespace SDP_Assignment
                 Console.WriteLine("Only rejected or revised documents can be resubmitted.");
             }
         }
-
-        public void ConvertDocument()
+        public Document ConvertDocument()
         {
             if (formatConverter == null)
             {
                 Console.WriteLine("No format converter set.");
-                return;
+                return null;
             }
-            //formatConverter.Convert(content);
+            Document convertedDocument = formatConverter.Convert(this);
+            return convertedDocument;
         }
 
         public void SetFormatConverter(IFormatConverter converter)

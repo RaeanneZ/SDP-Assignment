@@ -328,7 +328,14 @@ namespace SDP_Assignment
                 return;
             }
 
-            //converter.Convert(document.GetContent());
+            // Set the converter
+            document.SetFormatConverter(converter);
+
+            // Perform the conversion
+            Document convertedDocument = document.ConvertDocument();
+            documents.Add(convertedDocument);
+
+
             Console.WriteLine("Document converted. Press Enter to continue.");
             Console.ReadLine();
         }

@@ -8,6 +8,6 @@ namespace SDP_Assignment
 {
     public interface IFormatConverter
     {
-        void Convert(string content);
+        Document Convert(Document document);
     }
 }
