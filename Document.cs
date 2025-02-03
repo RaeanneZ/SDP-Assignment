@@ -1,31 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SDP_Assignment
 {
-    class Document
+    public class Document : Subject
     {
-        private DocumentState docState;
-        private List<User> collaborators = new List<User>();
-        private List<IObserver> observerList = new List<IObserver>();
+        private List<Observer> observers = new List<Observer>();
         private IFormatConverter formatConverter;
         private string title;
-        private string content;
         private User owner;
         private User approver;
+
+        // Document Content
+        private List<string> header;
+        private List<string> content;
+        private List<string> footer;
+
+        // Document states
+        private DocState state;
+        private readonly DocState draftState;
+        private readonly DocState reviewState;
+        private readonly DocState approvedState;
+        private readonly DocState rejectedState;
+        private readonly DocState reviseState;
+
+        public List<User> Collaborators { get; private set; }
 
         public string Title
         {
             get { return title; }
-        }
-
-        public string Content
-        {
-            get { return content; }
-            set { content = value; }
         }
 
         public User Owner
@@ -38,80 +41,272 @@ namespace SDP_Assignment
             get { return approver; }
         }
 
+        public DocState DraftState
+        {
+            get { return draftState; }
+        }
+
+        public DocState ReviewState
+        {
+            get { return reviewState; }
+        }
+
+        public DocState ApprovedState
+        {
+            get { return approvedState; }
+        }
+
+        public DocState RejectedState
+        {
+            get { return rejectedState; }
+        }
+
+        public DocState ReviseState
+        {
+            get { return reviseState; }
+        }
+
+        public List<string> GetHeader()
+        {
+            return header;
+        }
+        public List<string> GetContent()
+        {
+            return content;
+        }
+        public List<string> GetFooter()
+        {
+            return footer;
+        }
+
         public Document(string title, User owner)
         {
             this.title = title;
             this.owner = owner;
-            content = "";
-            docState = new DraftState();
+            content = new List<string>();
+            header = new List<string>();
+            footer = new List<string>();
+
+            Collaborators = new List<User>();
+
+            // Initialize states
+            draftState = new DraftState(this);
+            reviewState = new ReviewState(this);
+            approvedState = new ApprovedState(this);
+            rejectedState = new RejectedState(this);
+            reviseState = new ReviseState(this);
+
+            state = draftState;
         }
 
-        // This is for the document to add more components
-        public void AddComponent(string component)
-        {
-            Content += $"\n\n{component}";
-        }
-
-        public void SetState(DocumentState state)
-        {
-            docState = state;
-            NotifyObservers($"State changed to {state.GetType().Name}.");
-        }
-
+        // This is for setting and getting the header, content and footer
         public void AddCollaborator(User user)
         {
-            if (Owner == user)
+            if (user == owner)
             {
-                Console.WriteLine("Owner cannot add themselves as a collaborator.");
+                Console.WriteLine("Owner is already a collaborator.");
                 return;
             }
-            collaborators.Add(user);
-            NotifyObservers($"{user.Name} added as a collaborator.");
+
+            if (!Collaborators.Contains(user))
+            {
+                Collaborators.Add(user);
+                RegisterObserver(user);
+                NotifyObservers(user.Name + " added as a collaborator to document '" + Title + "'.");
+            }
+        }
+
+        public void Edit(string newContent, User user)
+        {
+            if (IsOwnerOrCollaborator(user))
+            {
+                content.Add(newContent);
+                NotifyObservers("Document '" + Title + "' was edited by " + user.Name + ".");
+            }
+            else
+            {
+                Console.WriteLine("Only owner or collaborators can edit.");
+            }
+        }
+
+        public void SubmitForApproval(User user)
+        {
+            if (user != owner)
+            {
+                Console.WriteLine("Only the owner can submit for approval.");
+                return;
+            }
+
+            NotifyObservers("Document '" + Title + "' submitted for approval by " + user.Name + ".");
+            state.submit(user);
         }
 
         public void SetApprover(User user)
         {
-            if (collaborators.Contains(user) || Owner == user)
+            if (user == owner || Collaborators.Contains(user))
             {
-                Console.WriteLine("Approver cannot be the owner or a collaborator.");
+                Console.WriteLine("Error: Approver cannot be the owner or a collaborator.");
                 return;
             }
+
             approver = user;
-            NotifyObservers($"{user.Name} assigned as the approver.");
+            RegisterObserver(user);
+            NotifyObservers("Approver assigned: " + user.Name + " for document '" + Title + "'.");
         }
 
-        public bool IsOwnerOrCollaborator(User user)
+        public void SetState(DocState newState)
         {
-            return owner == user || collaborators.Contains(user);
+            this.state = newState;
+            NotifyObservers("Document '" + Title + "' state changed to: " + newState.GetType().Name);
         }
 
-        public void AddObserver(IObserver observer)
+        public void RegisterObserver(Observer observer)
         {
-            observerList.Add(observer);
+            if (!observers.Contains(observer))
+            {
+                observers.Add(observer);
+            }
+        }
+
+        public void RemoveObserver(Observer observer)
+        {
+            observers.Remove(observer);
         }
 
         public void NotifyObservers(string message)
         {
-            foreach (var observer in observerList)
+            foreach (Observer observer in observers)
             {
                 observer.Notify(message);
             }
         }
 
-        public void Edit(string content, User user)
+        public bool IsOwnerOrCollaborator(User user)
         {
-            docState.Edit(this, content, user);
-        }
-        public void Submit(User user)
-        {
-            docState.Submit(this, user);
+            return owner == user || Collaborators.Contains(user);
         }
 
-        public string CurrentStateName => docState.GetType().Name;
+        public void Approve()
+        {
+            if (approver == null)
+            {
+                Console.WriteLine("No approver assigned.");
+                return;
+            }
+            if (state != reviewState)
+            {
+                Console.WriteLine("Document must be under review to be approved.");
+                return;
+            }
+            state.approve();
+        }
+
+        public void Reject()
+        {
+            if (approver == null)
+            {
+                Console.WriteLine("No approver assigned.");
+                return;
+            }
+            if (state != reviewState)
+            {
+                Console.WriteLine("Document must be under review to be rejected.");
+                return;
+            }
+            state.reject();
+        }
+
+        public void PushBack(string comment)
+        {
+            if (state == reviewState)
+            {
+                state.pushBack(comment);
+            }
+            else
+            {
+                Console.WriteLine("Document must be in review state to be pushed back.");
+            }
+        }
+
+        public void Resubmit()
+        {
+            if (state == reviseState || state == rejectedState)
+            {
+                state.resubmit();
+            }
+            else
+            {
+                Console.WriteLine("Only rejected or revised documents can be resubmitted.");
+            }
+        }
+
+        public void ConvertDocument()
+        {
+            if (formatConverter == null)
+            {
+                Console.WriteLine("No format converter set.");
+                return;
+            }
+            //formatConverter.Convert(content);
+        }
+
+        public void SetFormatConverter(IFormatConverter converter)
+        {
+            formatConverter = converter;
+        }
+
+        public string CurrentStateName
+        {
+            get { return state.GetType().Name; }
+        }
 
         public bool IsAssociatedWithUser(User user)
         {
-            return owner == user || collaborators.Contains(user) || approver == user;
+            return owner == user || Collaborators.Contains(user) || approver == user;
+        }
+
+
+        // Get and set the content
+        public void SetHeader(string newHeader, User user)
+        {
+            if (IsOwnerOrCollaborator(user))
+            {
+                header.Add(newHeader);
+                NotifyObservers($"Document '{Title}' header updated by {user.Name}.");
+            }
+            else
+            {
+                Console.WriteLine("Only owner or collaborators can edit.");
+            }
+        }
+
+        public void SetContent(string newContent, User user)
+        {
+            if (IsOwnerOrCollaborator(user))
+            {
+                content.Add(newContent);
+                NotifyObservers($"Document '{Title}' content updated by {user.Name}.");
+            }
+            else
+            {
+                Console.WriteLine("Only owner or collaborators can edit.");
+            }
+        }
+
+        public void SetFooter(string newFooter, User user)
+        {
+            if (IsOwnerOrCollaborator(user))
+            {
+                footer.Add(newFooter);
+                NotifyObservers($"Document '{Title}' footer updated by {user.Name}.");
+            }
+            else
+            {
+                Console.WriteLine("Only owner or collaborators can edit.");
+            }
         }
     }
 }
+
+
+
