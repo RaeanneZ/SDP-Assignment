@@ -207,12 +207,53 @@ namespace SDP_Assignment
 
         static void EditDocument(Document document)
         {
-            Console.Write("Enter content to add: ");
-            var content = Console.ReadLine();
-            document.Edit(content, loggedInUser);
-            Console.WriteLine("Document edited. Press Enter to continue.");
+            Console.Clear();
+            Console.WriteLine("==== Editing Document ====");
+            Console.WriteLine($"Title: {document.Title}");
+            Console.WriteLine("--------------------------------------------------");
+            Console.WriteLine("Header:");
+            Console.WriteLine(document.GetHeader());
+            Console.WriteLine("--------------------------------------------------");
+            Console.WriteLine("Content:");
+            Console.WriteLine(document.GetContent());
+            Console.WriteLine("--------------------------------------------------");
+            Console.WriteLine("Footer:");
+            Console.WriteLine(document.GetFooter());
+            Console.WriteLine("--------------------------------------------------");
+
+            Console.WriteLine("Which part would you like to edit?");
+            Console.WriteLine("1. Header");
+            Console.WriteLine("2. Content");
+            Console.WriteLine("3. Footer");
+            Console.WriteLine("4. Cancel");
+            Console.Write("Enter choice: ");
+
+            var choice = Console.ReadLine();
+            Console.Write("Enter new text: ");
+            var newText = Console.ReadLine();
+
+            switch (choice)
+            {
+                case "1":
+                    document.SetHeader(newText, loggedInUser);
+                    break;
+                case "2":
+                    document.SetContent(newText, loggedInUser);
+                    break;
+                case "3":
+                    document.SetFooter(newText, loggedInUser);
+                    break;
+                case "4":
+                    return;
+                default:
+                    Console.WriteLine("Invalid choice.");
+                    break;
+            }
+
+            Console.WriteLine("Document updated. Press Enter to continue.");
             Console.ReadLine();
         }
+
 
         static void AddCollaborator(Document document)
         {
@@ -236,21 +277,22 @@ namespace SDP_Assignment
             Console.Write("Enter approver username: ");
             var username = Console.ReadLine();
 
-            if (users.ContainsKey(username))
+            if (!users.ContainsKey(username))
             {
-                document.SetApprover(users[username]);
-                Console.WriteLine("Approver set. Press Enter to continue.");
+                Console.WriteLine("User not found. Please enter a valid username.");
+                Console.ReadLine();
+                return;
             }
-            else
-            {
-                Console.WriteLine("User not found. Press Enter to try again.");
-            }
+
+            var user = users[username];
+            document.SetApprover(user);
+            Console.WriteLine("Approver set successfully. Press Enter to continue.");
             Console.ReadLine();
         }
 
         static void SubmitDocument(Document document)
         {
-            document.Submit(loggedInUser);
+            document.SubmitForApproval(loggedInUser);
             Console.WriteLine("Document submitted. Press Enter to continue.");
             Console.ReadLine();
         }
@@ -277,7 +319,7 @@ namespace SDP_Assignment
                 return;
             }
 
-            converter.Convert(document.Content);
+            converter.Convert(document.GetContent());
             Console.WriteLine("Document converted. Press Enter to continue.");
             Console.ReadLine();
         }
