@@ -17,12 +17,11 @@ namespace SDP_Assignment
 
         public void add(User collaborator)
         {
-            doc.AddCollaborator(collaborator);
+            doc.Collaborators.Add(collaborator);
         }
 
         public void submit(User collaborator)
         {
-            Console.WriteLine("Document submitted for review.");
             doc.SetState(doc.ReviewState);
         }
         public void approve() => Console.WriteLine("Cannot approve a draft document.");

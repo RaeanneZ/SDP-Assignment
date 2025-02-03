@@ -210,6 +210,7 @@ namespace SDP_Assignment
             if (document.getState() == document.ReviewState)
             {
                 Console.WriteLine("Document cannot be edited while in review state!");
+                Console.WriteLine();
                 return;
             }
             Console.Clear();
@@ -281,7 +282,7 @@ namespace SDP_Assignment
             if (users.ContainsKey(username))
             {
                 document.AddCollaborator(users[username]);
-                Console.WriteLine("Collaborator added. Press Enter to continue.");
+                Console.WriteLine("Press Enter to continue.");
             }
             else
             {
@@ -311,7 +312,7 @@ namespace SDP_Assignment
         static void SubmitDocument(Document document)
         {
             document.SubmitForApproval(loggedInUser);
-            Console.WriteLine("Document submitted. Press Enter to continue.");
+            Console.WriteLine("Press Enter to continue.");
             Console.ReadLine();
         }
 
@@ -338,7 +339,7 @@ namespace SDP_Assignment
             }
 
             //converter.Convert(document.GetContent());
-            Console.WriteLine("Document converted. Press Enter to continue.");
+            Console.WriteLine("Press Enter to continue.");
             Console.ReadLine();
         }
     }

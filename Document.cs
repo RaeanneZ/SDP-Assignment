@@ -107,18 +107,18 @@ namespace SDP_Assignment
         // This is for setting and getting the header, content and footer
         public void AddCollaborator(User user)
         {
-            if (user == owner)
+            if (user == owner || Collaborators.Contains(user))
             {
-                Console.WriteLine("Owner is already a collaborator.");
+                Console.WriteLine("User is already a collaborator.");
+                Console.WriteLine();
                 return;
             }
 
-            if (!Collaborators.Contains(user))
-            {
-                state.add(user);
-                RegisterObserver(user);
-                NotifyObservers(user.Name + " added as a collaborator to document '" + Title + "'.");
-            }
+            state.add(user);
+            RegisterObserver(user);
+            NotifyObservers(user.Name + " added as a collaborator to document '" + Title + "'.");
+            return;
+
         }
 
         public void Edit(List<string> toAdd, string newContent, User user)
@@ -143,21 +143,29 @@ namespace SDP_Assignment
 
         public void SubmitForApproval(User user)
         {
-            if (user != owner)
+            if (approver == null)
             {
-                Console.WriteLine("Only the owner can submit for approval.");
+                Console.WriteLine("Please set an approver first!");
+                Console.WriteLine();
                 return;
             }
-
             NotifyObservers("Document '" + Title + "' submitted for approval by " + user.Name + ".");
             state.submit(user);
         }
 
         public void SetApprover(User user)
         {
+            if (state == reviewState || state == reviseState)
+            {
+                Console.WriteLine("Error: New approver cannot be set at this time.");
+                Console.WriteLine();
+                return;
+            }
+
             if (user == owner || Collaborators.Contains(user))
             {
                 Console.WriteLine("Error: Approver cannot be the owner or a collaborator.");
+                Console.WriteLine();
                 return;
             }
 

@@ -17,7 +17,7 @@ namespace SDP_Assignment
 
         public void add(User collaborator)
         {
-            doc.AddCollaborator(collaborator);
+            doc.Collaborators.Add(collaborator);
         }
 
         public void submit(User collaborator) => Console.WriteLine("Document is already under review.");
