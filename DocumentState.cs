@@ -14,7 +14,7 @@ namespace SDP_Assignment
         public void reject();
         public void pushBack(string comment);
         public void resubmit();
-        public void edit(User collaborator);
+        public void edit(List<string> content, string newContent, User collaborator);
     }
 
     class DraftState : DocState
@@ -40,7 +40,10 @@ namespace SDP_Assignment
         public void reject() => Console.WriteLine("Cannot reject a draft document.");
         public void pushBack(string comment) => Console.WriteLine("Cannot push back a draft document.");
         public void resubmit() => Console.WriteLine("Cannot resubmit a draft document.");
-        public void edit(User collaborator) => Console.WriteLine("Document edited by collaborator.");
+        public void edit(List<string> content, string newContent, User collaborator)
+        {
+            content.Add(newContent);
+        }
     }
 
     class ReviewState : DocState
@@ -74,7 +77,7 @@ namespace SDP_Assignment
             doc.SetState(doc.ReviseState);
         }
         public void resubmit() => Console.WriteLine("Document is already under review.");
-        public void edit(User collaborator) => Console.WriteLine("Cannot edit document under review.");
+        public void edit(List<string> content, string newContent, User collaborator) => Console.WriteLine("Cannot edit document under review.");
     }
 
     class ApprovedState : DocState
@@ -92,7 +95,7 @@ namespace SDP_Assignment
         public void reject() => Console.WriteLine("Cannot reject an approved document.");
         public void pushBack(string comment) => Console.WriteLine("Cannot push back an approved document.");
         public void resubmit() => Console.WriteLine("Cannot resubmit an approved document.");
-        public void edit(User collaborator) => Console.WriteLine("Cannot edit an approved document.");
+        public void edit(List<string> content, string newContent, User collaborator) => Console.WriteLine("Cannot edit an approved document.");
     }
 
     class RejectedState : DocState
@@ -118,7 +121,10 @@ namespace SDP_Assignment
             Console.WriteLine("Document resubmitted for review.");
             doc.SetState(doc.ReviewState);
         }
-        public void edit(User collaborator) => Console.WriteLine("Document edited by collaborator.");
+        public void edit(List<string> content, string newContent, User collaborator)
+        {
+            content.Add(newContent);
+        }
     }
 
     class ReviseState : DocState
@@ -144,6 +150,9 @@ namespace SDP_Assignment
         public void reject() => Console.WriteLine("Cannot reject a document in revision.");
         public void pushBack(string comment) => Console.WriteLine("Document is already in revision.");
         public void resubmit() => Console.WriteLine("Document is already in revision.");
-        public void edit(User collaborator) => Console.WriteLine("Document edited by collaborator.");
+        public void edit(List<string> content, string newContent, User collaborator)
+        {
+            content.Add(newContent);
+        }
     }
 }

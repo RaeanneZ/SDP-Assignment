@@ -207,6 +207,11 @@ namespace SDP_Assignment
 
         static void EditDocument(Document document)
         {
+            if (document.getState() == document.ReviewState)
+            {
+                Console.WriteLine("Document cannot be edited while in review state!");
+                return;
+            }
             Console.Clear();
             Console.WriteLine("==== Editing Document ====");
             Console.WriteLine($"Title: {document.Title}");
@@ -241,16 +246,20 @@ namespace SDP_Assignment
             Console.Write("Enter new text: ");
             var newText = Console.ReadLine();
 
+            List<string> header = document.GetHeader();
+            List<string> content = document.GetContent();
+            List<string> footer = document.GetFooter();
+
             switch (choice)
             {
                 case "1":
-                    document.SetHeader(newText, loggedInUser);
+                    document.Edit(header, newText, loggedInUser);
                     break;
                 case "2":
-                    document.SetContent(newText, loggedInUser);
+                    document.Edit(content, newText, loggedInUser);
                     break;
                 case "3":
-                    document.SetFooter(newText, loggedInUser);
+                    document.Edit(footer, newText, loggedInUser);
                     break;
                 case "4":
                     return;
@@ -259,7 +268,7 @@ namespace SDP_Assignment
                     break;
             }
 
-            Console.WriteLine("Document updated. Press Enter to continue.");
+            Console.WriteLine("Press Enter to continue.");
             Console.ReadLine();
         }
 
@@ -295,7 +304,7 @@ namespace SDP_Assignment
 
             var user = users[username];
             document.SetApprover(user);
-            Console.WriteLine("Approver set successfully. Press Enter to continue.");
+            Console.WriteLine("Press Enter to continue.");
             Console.ReadLine();
         }
 

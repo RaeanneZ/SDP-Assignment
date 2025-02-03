@@ -66,6 +66,11 @@ namespace SDP_Assignment
             get { return reviseState; }
         }
 
+        public DocState getState()
+        {
+            return state;
+        }
+
         public List<string> GetHeader()
         {
             return header;
@@ -110,18 +115,25 @@ namespace SDP_Assignment
 
             if (!Collaborators.Contains(user))
             {
-                Collaborators.Add(user);
+                state.add(user);
                 RegisterObserver(user);
                 NotifyObservers(user.Name + " added as a collaborator to document '" + Title + "'.");
             }
         }
 
-        public void Edit(string newContent, User user)
+        public void Edit(List<string> toAdd, string newContent, User user)
         {
             if (IsOwnerOrCollaborator(user))
             {
-                content.Add(newContent);
-                NotifyObservers("Document '" + Title + "' was edited by " + user.Name + ".");
+                if (state != reviewState)
+                {
+                    state.edit(toAdd, newContent, user);
+                    NotifyObservers("Document '" + Title + "' was edited by " + user.Name + ".");
+                }
+                else
+                {
+                    Console.WriteLine("Document cannot be edited in review state!");
+                }
             }
             else
             {
