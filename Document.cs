@@ -12,9 +12,9 @@ namespace SDP_Assignment
         private User approver;
 
         // Document Content
-        private string header;
-        private string content;
-        private string footer;
+        private List<string> header;
+        private List<string> content;
+        private List<string> footer;
 
         // Document states
         private DocState state;
@@ -66,15 +66,15 @@ namespace SDP_Assignment
             get { return reviseState; }
         }
 
-        public string GetHeader()
+        public List<string> GetHeader()
         {
-            return header; 
+            return header;
         }
-        public string GetContent()
+        public List<string> GetContent()
         {
-            return content; 
+            return content;
         }
-        public string GetFooter()
+        public List<string> GetFooter()
         {
             return footer;
         }
@@ -83,7 +83,9 @@ namespace SDP_Assignment
         {
             this.title = title;
             this.owner = owner;
-            content = "";
+            content = new List<string>();
+            header = new List<string>();
+            footer = new List<string>();
 
             Collaborators = new List<User>();
 
@@ -97,9 +99,7 @@ namespace SDP_Assignment
             state = draftState;
         }
 
-    // This is for setting and getting the header, content and footer
-
-
+        // This is for setting and getting the header, content and footer
         public void AddCollaborator(User user)
         {
             if (user == owner)
@@ -120,7 +120,7 @@ namespace SDP_Assignment
         {
             if (IsOwnerOrCollaborator(user))
             {
-                content = newContent;
+                content.Add(newContent);
                 NotifyObservers("Document '" + Title + "' was edited by " + user.Name + ".");
             }
             else
@@ -247,7 +247,7 @@ namespace SDP_Assignment
                 Console.WriteLine("No format converter set.");
                 return;
             }
-            formatConverter.Convert(content);
+            //formatConverter.Convert(content);
         }
 
         public void SetFormatConverter(IFormatConverter converter)
@@ -271,7 +271,7 @@ namespace SDP_Assignment
         {
             if (IsOwnerOrCollaborator(user))
             {
-                header = newHeader;
+                header.Add(newHeader);
                 NotifyObservers($"Document '{Title}' header updated by {user.Name}.");
             }
             else
@@ -284,7 +284,7 @@ namespace SDP_Assignment
         {
             if (IsOwnerOrCollaborator(user))
             {
-                content = newContent;
+                content.Add(newContent);
                 NotifyObservers($"Document '{Title}' content updated by {user.Name}.");
             }
             else
@@ -297,7 +297,7 @@ namespace SDP_Assignment
         {
             if (IsOwnerOrCollaborator(user))
             {
-                footer = newFooter;
+                footer.Add(newFooter);
                 NotifyObservers($"Document '{Title}' footer updated by {user.Name}.");
             }
             else

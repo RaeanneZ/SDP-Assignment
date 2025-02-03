@@ -141,7 +141,7 @@ namespace SDP_Assignment
 
             Console.Write("Enter the document title: ");
             var title = Console.ReadLine();
-            var document = factory.CreateDocument(title, loggedInUser);
+            var document = factory.CreateDocument(title, loggedInUser); // Ensure loggedInUser is not null
             documents.Add(document);
             Console.WriteLine("Document created successfully. Press Enter to return to the menu.");
             Console.ReadLine();
@@ -212,13 +212,22 @@ namespace SDP_Assignment
             Console.WriteLine($"Title: {document.Title}");
             Console.WriteLine("--------------------------------------------------");
             Console.WriteLine("Header:");
-            Console.WriteLine(document.GetHeader());
+            foreach (string i in document.GetHeader())
+            {
+                Console.WriteLine(i);
+            }
             Console.WriteLine("--------------------------------------------------");
             Console.WriteLine("Content:");
-            Console.WriteLine(document.GetContent());
+            foreach (string i in document.GetContent())
+            {
+                Console.WriteLine(i);
+            }
             Console.WriteLine("--------------------------------------------------");
             Console.WriteLine("Footer:");
-            Console.WriteLine(document.GetFooter());
+            foreach (string i in document.GetFooter())
+            {
+                Console.WriteLine(i);
+            }
             Console.WriteLine("--------------------------------------------------");
 
             Console.WriteLine("Which part would you like to edit?");
@@ -319,7 +328,7 @@ namespace SDP_Assignment
                 return;
             }
 
-            converter.Convert(document.GetContent());
+            //converter.Convert(document.GetContent());
             Console.WriteLine("Document converted. Press Enter to continue.");
             Console.ReadLine();
         }
