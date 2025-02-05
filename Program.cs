@@ -146,13 +146,13 @@ namespace SDP_Assignment
             Console.WriteLine("Document created successfully. Press Enter to return to the menu.");
             Console.ReadLine();
         }
-
         static void ViewDocuments()
         {
             Console.Clear();
             Console.WriteLine("==== Your Documents ====");
 
-            foreach (var doc in documents)
+            // Iterate over a COPY of the list to avoid modification issues
+            foreach (var doc in documents.ToList()) // <-- Add .ToList()
             {
                 if (doc.IsAssociatedWithUser(loggedInUser))
                 {
@@ -334,8 +334,6 @@ namespace SDP_Assignment
             // Perform the conversion
             Document convertedDocument = document.ConvertDocument();
             documents.Add(convertedDocument);
-
-            ViewDocuments();
 
             Console.WriteLine("Document converted. Press Enter to continue.");
             Console.ReadLine();

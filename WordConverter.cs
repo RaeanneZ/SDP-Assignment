@@ -19,19 +19,10 @@ namespace SDP_Assignment
             Document convertedDoc = new Document(newFileName, document.Owner);
 
             // Copy header, content, and footer
-            List<string> fullContent = new List<string>();
-            fullContent.AddRange(convertedDoc.GetHeader());
-            fullContent.AddRange(convertedDoc.GetContent());
-            fullContent.AddRange(convertedDoc.GetFooter());
-
-            // Simulate creating a Word document
-            using (StreamWriter writer = new StreamWriter($"{convertedDoc.Title}.docx"))
-            {
-                foreach (var line in fullContent)
-                {
-                    writer.WriteLine(line);
-                }
-            }
+            // list<string> to string
+            convertedDoc.SetHeader(string.Join(Environment.NewLine, document.GetHeader()), document.Owner);
+            convertedDoc.SetContent(string.Join(Environment.NewLine, document.GetContent()), document.Owner);
+            convertedDoc.SetFooter(string.Join(Environment.NewLine, document.GetFooter()), document.Owner);
 
             Console.WriteLine($"Word document created: {convertedDoc.Title}.docx");
 
