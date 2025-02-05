@@ -252,8 +252,6 @@ namespace SDP_Assignment
             Console.Write("Enter choice: ");
 
             var choice = Console.ReadLine();
-            Console.Write("Enter new text: ");
-            var newText = Console.ReadLine();
 
             List<string> header = document.GetHeader();
             List<string> content = document.GetContent();
@@ -262,15 +260,16 @@ namespace SDP_Assignment
             switch (choice)
             {
                 case "1":
-                    document.Edit(header, newText, loggedInUser);
+                    document.Edit(header, loggedInUser);
                     break;
                 case "2":
-                    document.Edit(content, newText, loggedInUser);
+                    document.Edit(content, loggedInUser);
                     break;
                 case "3":
-                    document.Edit(footer, newText, loggedInUser);
+                    document.Edit(footer, loggedInUser);
                     break;
                 case "4":
+                    Console.WriteLine();
                     return;
                 default:
                     Console.WriteLine("Invalid choice.");

@@ -50,7 +50,7 @@ namespace SDP_Assignment
             Console.WriteLine("Cannot resubmit an approved document.");
         }
 
-        public void edit(List<string> content, string newContent, User collaborator)
+        public void edit(List<string> section, User collaborator)
         {
             Console.WriteLine("Cannot edit an approved document.");
         }

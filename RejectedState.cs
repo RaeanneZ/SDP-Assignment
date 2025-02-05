@@ -65,10 +65,98 @@ namespace SDP_Assignment
             doc.SetState(doc.ReviewState);
         }
 
-        public void edit(List<string> content, string newContent, User collaborator)
+        public void edit(List<string> section, User collaborator)
         {
-            content.Add(newContent);
-            isEdited = true;
+            if (!doc.IsOwnerOrCollaborator(collaborator))
+            {
+                Console.WriteLine("Only owner or collaborators can edit.");
+                return;
+            }
+
+            if (doc.getState() == doc.ReviewState)
+            {
+                Console.WriteLine("Document cannot be edited in review state!");
+                return;
+            }
+
+            if (section.Count == 1)
+            {
+                section.Clear();
+            }
+
+            while (true)
+            {
+                Console.WriteLine("\nChoose an edit option:");
+                Console.WriteLine("1. Add a new line");
+                Console.WriteLine("2. Delete a line");
+                Console.WriteLine("3. Replace a line");
+                Console.WriteLine("4. Finish editing");
+
+                Console.Write("Enter your choice: ");
+                string choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        Console.Write("Enter text to add: ");
+                        string newText = Console.ReadLine();
+                        section.Add(newText);
+                        Console.WriteLine("Line added.");
+                        isEdited = true;
+                        break;
+
+                    case "2":
+                        Console.WriteLine("Current content:");
+                        for (int i = 0; i < section.Count; i++)
+                        {
+                            Console.WriteLine($"{i}: {section[i]}");
+                        }
+
+                        Console.Write("Enter the line number to delete: ");
+                        if (int.TryParse(Console.ReadLine(), out int deleteIndex) && deleteIndex >= 0 && deleteIndex < section.Count)
+                        {
+                            section.RemoveAt(deleteIndex);
+                            Console.WriteLine("Line deleted.");
+                            isEdited = true;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Invalid line number.");
+                        }
+                        break;
+
+                    case "3":
+                        Console.WriteLine("Current content:");
+                        for (int i = 0; i < section.Count; i++)
+                        {
+                            Console.WriteLine($"{i}: {section[i]}");
+                        }
+
+                        Console.Write("Enter the line number to replace: ");
+                        if (int.TryParse(Console.ReadLine(), out int replaceIndex) && replaceIndex >= 0 && replaceIndex < section.Count)
+                        {
+                            Console.Write("Enter new text: ");
+                            string replaceText = Console.ReadLine();
+                            section[replaceIndex] = replaceText;
+                            Console.WriteLine("Line replaced.");
+                            isEdited = true;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Invalid line number.");
+                        }
+                        break;
+
+                    case "4":
+                        Console.WriteLine("Editing complete.");
+                        doc.NotifyObservers($"Document '{doc.Title}' was edited by {collaborator.Name}.");
+                        return;
+
+                    default:
+                        Console.WriteLine("Invalid choice. Please select again.");
+                        break;
+                }
+            }
         }
     }
 }

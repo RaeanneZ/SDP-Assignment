@@ -15,7 +15,7 @@ namespace SDP_Assignment
         public void reject();
         public void pushBack(string comment);
         public void resubmit();
-        public void edit(List<string> content, string newContent, User collaborator);
+        public void edit(List<string> section, User collaborator);
     }
 
 }

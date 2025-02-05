@@ -131,13 +131,13 @@ namespace SDP_Assignment
             return;
         }
 
-        public void Edit(List<string> toAdd, string newContent, User user)
+        public void Edit(List<string> section, User user)
         {
             if (IsOwnerOrCollaborator(user))
             {
                 if (state != reviewState)
                 {
-                    state.edit(toAdd, newContent, user);
+                    ExecuteCommand(new EditDocumentCommand(this, section, user));
                     NotifyObservers("Document '" + Title + "' was edited by " + user.Name + ".");
                 }
                 else

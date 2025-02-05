@@ -58,7 +58,7 @@ namespace SDP_Assignment
             Console.WriteLine("Document is already under review."); 
         }
 
-        public void edit(List<string> content, string newContent, User collaborator)
+        public void edit(List<string> section, User collaborator)
         {
             Console.WriteLine("Cannot edit document under review.");
         }
