@@ -175,7 +175,9 @@ namespace SDP_Assignment
                 Console.WriteLine("3. Set Approver");
                 Console.WriteLine("4. Submit Document");
                 Console.WriteLine("5. Convert Document");
-                Console.WriteLine("6. Back");
+                Console.WriteLine("6. Undo");
+                Console.WriteLine("7. Redo");
+                Console.WriteLine("0. Back");
                 Console.Write("Choose an action: ");
 
                 var choice = Console.ReadLine();
@@ -197,6 +199,12 @@ namespace SDP_Assignment
                         ConvertDocument(document);
                         break;
                     case "6":
+                        document.UndoLastCommand();
+                        break;
+                    case "7":
+                        document.RedoLastCommand();
+                        break;
+                    case "0":
                         return;
                     default:
                         Console.WriteLine("Invalid choice. Try again.");
@@ -272,7 +280,6 @@ namespace SDP_Assignment
             Console.WriteLine("Press Enter to continue.");
             Console.ReadLine();
         }
-
 
         static void AddCollaborator(Document document)
         {

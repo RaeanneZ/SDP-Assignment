@@ -9,7 +9,7 @@ namespace SDP_Assignment
     public interface DocState
     {
         public void add(User collaborator);
-        public void submit(User collaborator);
+        public void submit();
         public void approve();
         public void reject();
         public void pushBack(string comment);

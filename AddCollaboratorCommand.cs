@@ -17,7 +17,8 @@ namespace SDP_Assignment
 
         public void Execute()
         {
-            doc.AddCollaborator(this.user);
+            doc.getState().add(this.user);
+            doc.NotifyObservers($"{user.Name} has been added as collaborator.");
         }
 
         public void Undo()

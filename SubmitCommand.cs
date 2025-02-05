@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace SDP_Assignment
 {
-    public class ChangeStateCommand : DocumentCommand
+    public class SubmitCommand : DocumentCommand
     {
         private Document doc;
         private DocState prevState;
         private DocState newState;
 
-        public ChangeStateCommand(Document doc, DocState newState)
+        public SubmitCommand(Document doc, DocState newState)
         {
             this.doc = doc;
             this.newState = newState;
@@ -21,7 +21,7 @@ namespace SDP_Assignment
         public void Execute()
         {
             prevState = doc.getState();
-            doc.SetState(newState);
+            doc.getState().submit();
         }
 
         public void Undo()

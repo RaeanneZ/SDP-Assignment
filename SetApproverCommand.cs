@@ -21,7 +21,7 @@ namespace SDP_Assignment
 
         public void Execute()
         {
-            doc.SetApprover(this.newApprover);
+            
         }
 
         public void Undo()

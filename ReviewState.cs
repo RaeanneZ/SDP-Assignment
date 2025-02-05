@@ -20,7 +20,7 @@ namespace SDP_Assignment
             doc.Collaborators.Add(collaborator);
         }
 
-        public void submit(User collaborator) => Console.WriteLine("Document is already under review.");
+        public void submit() => Console.WriteLine("Document is already under review.");
         public void approve()
         {
             Console.WriteLine("Document approved.");

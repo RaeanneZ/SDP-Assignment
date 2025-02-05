@@ -20,7 +20,7 @@ namespace SDP_Assignment
             doc.Collaborators.Add(collaborator);
         }
 
-        public void submit(User collaborator)
+        public void submit()
         {
             Console.WriteLine("Document resubmitted for review.");
             doc.SetState(doc.ReviewState);

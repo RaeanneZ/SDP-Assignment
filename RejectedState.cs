@@ -20,7 +20,7 @@ namespace SDP_Assignment
             doc.Collaborators.Add(collaborator);
         }
 
-        public void submit(User collaborator) => Console.WriteLine("Cannot submit a rejected document.");
+        public void submit() => Console.WriteLine("Cannot submit a rejected document.");
         public void approve() => Console.WriteLine("Cannot approve a rejected document.");
         public void reject() => Console.WriteLine("Document is already rejected.");
         public void pushBack(string comment) => Console.WriteLine("Cannot push back a rejected document.");

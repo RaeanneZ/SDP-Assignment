@@ -24,6 +24,10 @@ namespace SDP_Assignment
         private readonly DocState rejectedState;
         private readonly DocState reviseState;
 
+        // Commands
+        private Stack<DocumentCommand> commandHistory = new Stack<DocumentCommand>();
+        private Stack<DocumentCommand> redoStack = new Stack<DocumentCommand>(); 
+
         public List<User> Collaborators { get; private set; }
 
         public string Title
@@ -113,12 +117,17 @@ namespace SDP_Assignment
                 Console.WriteLine();
                 return;
             }
+            
+            if (approver == user) 
+            {
+                Console.WriteLine("Approver cannot be added as collaborator!");
+                Console.WriteLine();
+                return;
+            }
 
-            state.add(user);
+            ExecuteCommand(new AddCollaboratorCommand(this, user));
             RegisterObserver(user);
-            NotifyObservers(user.Name + " added as a collaborator to document '" + Title + "'.");
             return;
-
         }
 
         public void Edit(List<string> toAdd, string newContent, User user)
@@ -149,8 +158,9 @@ namespace SDP_Assignment
                 Console.WriteLine();
                 return;
             }
+
+            ExecuteCommand(new SubmitCommand(this, ReviewState));
             NotifyObservers("Document '" + Title + "' submitted for approval by " + user.Name + ".");
-            state.submit(user);
         }
 
         public void SetApprover(User user)
@@ -170,6 +180,7 @@ namespace SDP_Assignment
             }
 
             approver = user;
+            ExecuteCommand(new SetApproverCommand(this, user));
             RegisterObserver(user);
             NotifyObservers("Approver assigned: " + user.Name + " for document '" + Title + "'.");
         }
@@ -285,6 +296,41 @@ namespace SDP_Assignment
             return owner == user || Collaborators.Contains(user) || approver == user;
         }
 
+        public void ExecuteCommand(DocumentCommand command)
+        {
+            command.Execute();
+            commandHistory.Push(command);
+        }
+
+        public void UndoLastCommand()
+        {
+            if (commandHistory.Count > 0)
+            {
+                DocumentCommand command = commandHistory.Pop();
+                command.Undo();
+                redoStack.Push(command);
+            }
+            else
+            {
+                Console.WriteLine("No command to undo!");
+            }
+            Console.WriteLine();
+        }
+
+        public void RedoLastCommand()
+        {
+            if (redoStack.Count > 0)
+            {
+                DocumentCommand command = redoStack.Pop();
+                command.Redo();
+                commandHistory.Push(command);
+            }
+            else
+            {
+                Console.WriteLine("No command to redo!");
+            }
+            Console.WriteLine();
+        }
 
         // Get and set the content
         public void SetHeader(string newHeader, User user)

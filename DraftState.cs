@@ -20,7 +20,7 @@ namespace SDP_Assignment
             doc.Collaborators.Add(collaborator);
         }
 
-        public void submit(User collaborator)
+        public void submit()
         {
             doc.SetState(doc.ReviewState);
         }

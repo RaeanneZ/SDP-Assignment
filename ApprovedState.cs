@@ -16,7 +16,7 @@ namespace SDP_Assignment
         }
 
         public void add(User collaborator) => Console.WriteLine("Cannot add collaborators to an approved document.");
-        public void submit(User collaborator) => Console.WriteLine("Document is already approved.");
+        public void submit() => Console.WriteLine("Document is already approved.");
         public void approve() => Console.WriteLine("Document is already approved.");
         public void reject() => Console.WriteLine("Cannot reject an approved document.");
         public void pushBack(string comment) => Console.WriteLine("Cannot push back an approved document.");
