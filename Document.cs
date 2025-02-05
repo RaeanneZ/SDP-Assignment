@@ -43,6 +43,7 @@ namespace SDP_Assignment
         public User Approver
         {
             get { return approver; }
+            set { approver = value; }
         }
 
         public DocState DraftState
@@ -111,7 +112,7 @@ namespace SDP_Assignment
         // This is for setting and getting the header, content and footer
         public void AddCollaborator(User user)
         {
-            if (user == owner || Collaborators.Contains(user))
+            if (IsOwnerOrCollaborator(user))
             {
                 Console.WriteLine("User is already a collaborator.");
                 Console.WriteLine();
@@ -160,7 +161,6 @@ namespace SDP_Assignment
             }
 
             ExecuteCommand(new SubmitCommand(this, ReviewState));
-            NotifyObservers("Document '" + Title + "' submitted for approval by " + user.Name + ".");
         }
 
         public void SetApprover(User user)
@@ -172,17 +172,15 @@ namespace SDP_Assignment
                 return;
             }
 
-            if (user == owner || Collaborators.Contains(user))
+            if (IsOwnerOrCollaborator(user))
             {
                 Console.WriteLine("Error: Approver cannot be the owner or a collaborator.");
                 Console.WriteLine();
                 return;
             }
 
-            approver = user;
             ExecuteCommand(new SetApproverCommand(this, user));
             RegisterObserver(user);
-            NotifyObservers("Approver assigned: " + user.Name + " for document '" + Title + "'.");
         }
 
         public void SetState(DocState newState)

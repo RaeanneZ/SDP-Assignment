@@ -24,10 +24,39 @@ namespace SDP_Assignment
         {
             doc.SetState(doc.ReviewState);
         }
-        public void approve() => Console.WriteLine("Cannot approve a draft document.");
-        public void reject() => Console.WriteLine("Cannot reject a draft document.");
-        public void pushBack(string comment) => Console.WriteLine("Cannot push back a draft document.");
-        public void resubmit() => Console.WriteLine("Cannot resubmit a draft document.");
+
+        public void setApprover(User collaborator)
+        {
+            if (collaborator == null)
+            {
+                doc.Approver = null;  
+                Console.WriteLine("Approver has been removed.");
+                return;
+            }
+
+            doc.Approver = collaborator;
+        }
+
+        public void approve()
+        {
+            Console.WriteLine("Cannot approve a draft document.");
+        }
+
+        public void reject()
+        {
+            Console.WriteLine("Cannot reject a draft document.");
+        }
+
+        public void pushBack(string comment)
+        {
+            Console.WriteLine("Cannot push back a draft document.");
+        }
+
+        public void resubmit()
+        {
+            Console.WriteLine("Cannot resubmit a draft document.");
+        }
+
         public void edit(List<string> content, string newContent, User collaborator)
         {
             content.Add(newContent);

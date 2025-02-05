@@ -10,6 +10,7 @@ namespace SDP_Assignment
     {
         public void add(User collaborator);
         public void submit();
+        public void setApprover(User user);
         public void approve();
         public void reject();
         public void pushBack(string comment);

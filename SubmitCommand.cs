@@ -22,11 +22,13 @@ namespace SDP_Assignment
         {
             prevState = doc.getState();
             doc.getState().submit();
+            doc.NotifyObservers("Document '" + doc.Title + "' submitted for approval.");
         }
 
         public void Undo()
         {
             doc.SetState(prevState);
+            doc.NotifyObservers("Document '" + doc.Title + "' unsubmitted for approval.");
         }
 
         public void Redo() {
