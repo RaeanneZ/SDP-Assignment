@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SDP_Assignment
 {
-    class ReviseState : DocState
+    public class ReviseState : DocState
     {
         private Document doc;
         private bool isEdited = false;

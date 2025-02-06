@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SDP_Assignment
 {
-    class RejectedState : DocState
+    public class RejectedState : DocState
     {
         private Document doc;
         private bool isEdited = false;

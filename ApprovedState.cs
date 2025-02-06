@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SDP_Assignment
 {
-    class ApprovedState : DocState
+    public class ApprovedState : DocState
     {
         private Document doc;
 
