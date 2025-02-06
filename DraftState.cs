@@ -57,7 +57,7 @@ namespace SDP_Assignment
             Console.WriteLine("Cannot resubmit a draft document.");
         }
 
-        public void edit(List<string> section, User collaborator)
+        public void edit(List<string> section, User collaborator, string action, string text = "", int lineNumber = -1)
         {
             if (!doc.IsOwnerOrCollaborator(collaborator))
             {
@@ -71,84 +71,43 @@ namespace SDP_Assignment
                 return;
             }
 
-            if (section.Count == 1)
+            switch (action)
             {
-                section.Clear();
+                case "add":
+                    section.Add(text);
+                    Console.WriteLine("Line added.");
+                    break;
+
+                case "remove":
+                    if (lineNumber >= 0 && lineNumber < section.Count)
+                    {
+                        section.RemoveAt(lineNumber);
+                        Console.WriteLine("Line deleted.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid line number.");
+                    }
+                    break;
+
+                case "replace":
+                    if (lineNumber >= 0 && lineNumber < section.Count)
+                    {
+                        section[lineNumber] = text;
+                        Console.WriteLine("Line replaced.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid line number.");
+                    }
+                    break;
+
+                default:
+                    Console.WriteLine("Invalid action.");
+                    break;
             }
 
-            while (true)
-            {
-                Console.WriteLine("\nChoose an edit option:");
-                Console.WriteLine("1. Add a new line");
-                Console.WriteLine("2. Delete a line");
-                Console.WriteLine("3. Replace a line");
-                Console.WriteLine("4. Finish editing");
-
-                Console.Write("Enter your choice: ");
-                string choice = Console.ReadLine();
-
-                switch (choice)
-                {
-                    case "1": 
-                        Console.Write("Enter text to add: ");
-                        string newText = Console.ReadLine();
-                        section.Add(newText);
-                        Console.WriteLine("Line added.");
-                        break;
-
-                    case "2":
-                        Console.WriteLine();
-                        Console.WriteLine("Current content:");
-                        for (int i = 0; i < section.Count; i++)
-                        {
-                            Console.WriteLine($"{i}: {section[i]}");
-                        }
-
-                        Console.Write("Enter the line number to delete: ");
-                        if (int.TryParse(Console.ReadLine(), out int deleteIndex) && deleteIndex >= 0 && deleteIndex < section.Count)
-                        {
-                            section.RemoveAt(deleteIndex);
-                            Console.WriteLine("Line deleted.");
-                        }
-                        else
-                        {
-                            Console.WriteLine("Invalid line number.");
-                        }
-                        break;
-
-                    case "3":
-                        Console.WriteLine();
-                        Console.WriteLine("Current content:");
-                        for (int i = 0; i < section.Count; i++)
-                        {
-                            Console.WriteLine($"{i}: {section[i]}");
-                        }
-
-                        Console.Write("Enter the line number to replace: ");
-                        if (int.TryParse(Console.ReadLine(), out int replaceIndex) && replaceIndex >= 0 && replaceIndex < section.Count)
-                        {
-                            Console.Write("Enter new text: ");
-                            string replaceText = Console.ReadLine();
-                            section[replaceIndex] = replaceText;
-                            Console.WriteLine("Line replaced.");
-                        }
-                        else
-                        {
-                            Console.WriteLine("Invalid line number.");
-                        }
-                        break;
-
-                    case "4":
-                        Console.WriteLine("Editing complete.");
-                        doc.NotifyObservers($"Document '{doc.Title}' was edited by {collaborator.Name}.");
-                        Console.WriteLine();
-                        return;
-
-                    default:
-                        Console.WriteLine("Invalid choice. Please select again.");
-                        break;
-                }
-            }
+            doc.NotifyObservers($"Document '{doc.Title}' was edited by {collaborator.Name}.");
         }
 
     }

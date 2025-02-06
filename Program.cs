@@ -260,13 +260,13 @@ namespace SDP_Assignment
             switch (choice)
             {
                 case "1":
-                    document.Edit(header, loggedInUser);
+                    DisplayEditMenu(document, header, loggedInUser);
                     break;
                 case "2":
-                    document.Edit(content, loggedInUser);
+                    DisplayEditMenu(document, content, loggedInUser);
                     break;
                 case "3":
-                    document.Edit(footer, loggedInUser);
+                    DisplayEditMenu(document, footer, loggedInUser);
                     break;
                 case "4":
                     Console.WriteLine();
@@ -278,6 +278,83 @@ namespace SDP_Assignment
 
             Console.WriteLine("Press Enter to continue.");
             Console.ReadLine();
+        }
+
+        static void DisplayEditMenu(Document document, List<string> section, User user)
+        {
+            while (true)
+            {
+                Console.WriteLine("\nChoose an edit option:");
+                Console.WriteLine("1. Add a new line");
+                Console.WriteLine("2. Delete a line");
+                Console.WriteLine("3. Replace a line");
+                Console.WriteLine("4. Finish editing");
+
+                Console.Write("Enter your choice: ");
+                string choice = Console.ReadLine();
+
+                Console.WriteLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        Console.Write("Enter text to add: ");
+                        string newText = Console.ReadLine();
+                        document.Edit(section, user, "add", newText);
+                        Console.WriteLine("Line added.");
+                        break;
+
+                    case "2":
+                        Console.WriteLine();
+                        Console.WriteLine("Current content:");
+                        for (int i = 0; i < section.Count; i++)
+                        {
+                            Console.WriteLine($"{i}: {section[i]}");
+                        }
+
+                        Console.Write("Enter the line number to delete: ");
+                        if (int.TryParse(Console.ReadLine(), out int deleteIndex) && deleteIndex >= 0 && deleteIndex < section.Count)
+                        {
+                            document.Edit(section, user, "remove", lineNumber: deleteIndex);
+                            Console.WriteLine("Line deleted.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Invalid line number.");
+                        }
+                        break;
+
+                    case "3":
+                        Console.WriteLine();
+                        Console.WriteLine("Current content:");
+                        for (int i = 0; i < section.Count; i++)
+                        {
+                            Console.WriteLine($"{i}: {section[i]}");
+                        }
+
+                        Console.Write("Enter the line number to replace: ");
+                        if (int.TryParse(Console.ReadLine(), out int replaceIndex) && replaceIndex >= 0 && replaceIndex < section.Count)
+                        {
+                            Console.Write("Enter new text: ");
+                            string replaceText = Console.ReadLine();
+                            document.Edit(section, user, "replace", replaceText, replaceIndex);
+                            Console.WriteLine("Line replaced.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Invalid line number.");
+                        }
+                        break;
+
+                    case "4":
+                        Console.WriteLine("Editing complete.");
+                        return;
+
+                    default:
+                        Console.WriteLine("Invalid choice. Please select again.");
+                        break;
+                }
+            }
         }
 
         static void AddCollaborator(Document document)
