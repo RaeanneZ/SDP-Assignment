@@ -10,7 +10,9 @@ namespace SDP_Assignment
     {
         public TechnicalReportDocument(string title, User owner) : base(title, owner)
         {
-            Content = "Technical Report Header\n\nTechnical Report Footer";
+            SetHeader("Technical Report Header", owner);
+            SetContent("This is the body of the technical report.", owner);
+            SetFooter("Technical Report Footer", owner);
         }
     }
 }

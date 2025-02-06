@@ -141,7 +141,7 @@ namespace SDP_Assignment
 
             Console.Write("Enter the document title: ");
             var title = Console.ReadLine();
-            var document = factory.CreateDocument(title, loggedInUser);
+            var document = factory.CreateDocument(title, loggedInUser); // Ensure loggedInUser is not null
             documents.Add(document);
             Console.WriteLine("Document created successfully. Press Enter to return to the menu.");
             Console.ReadLine();
@@ -175,7 +175,9 @@ namespace SDP_Assignment
                 Console.WriteLine("3. Set Approver");
                 Console.WriteLine("4. Submit Document");
                 Console.WriteLine("5. Convert Document");
-                Console.WriteLine("6. Back");
+                Console.WriteLine("6. Undo");
+                Console.WriteLine("7. Redo");
+                Console.WriteLine("0. Back");
                 Console.Write("Choose an action: ");
 
                 var choice = Console.ReadLine();
@@ -197,6 +199,12 @@ namespace SDP_Assignment
                         ConvertDocument(document);
                         break;
                     case "6":
+                        document.UndoLastCommand();
+                        break;
+                    case "7":
+                        document.RedoLastCommand();
+                        break;
+                    case "0":
                         return;
                     default:
                         Console.WriteLine("Invalid choice. Try again.");
@@ -207,10 +215,68 @@ namespace SDP_Assignment
 
         static void EditDocument(Document document)
         {
-            Console.Write("Enter content to add: ");
-            var content = Console.ReadLine();
-            document.Edit(content, loggedInUser);
-            Console.WriteLine("Document edited. Press Enter to continue.");
+            if (document.getState() == document.ReviewState)
+            {
+                Console.WriteLine("Document cannot be edited while in review state!");
+                Console.WriteLine();
+                return;
+            }
+            Console.Clear();
+            Console.WriteLine("==== Editing Document ====");
+            Console.WriteLine($"Title: {document.Title}");
+            Console.WriteLine("--------------------------------------------------");
+            Console.WriteLine("Header:");
+            foreach (string i in document.GetHeader())
+            {
+                Console.WriteLine(i);
+            }
+            Console.WriteLine("--------------------------------------------------");
+            Console.WriteLine("Content:");
+            foreach (string i in document.GetContent())
+            {
+                Console.WriteLine(i);
+            }
+            Console.WriteLine("--------------------------------------------------");
+            Console.WriteLine("Footer:");
+            foreach (string i in document.GetFooter())
+            {
+                Console.WriteLine(i);
+            }
+            Console.WriteLine("--------------------------------------------------");
+
+            Console.WriteLine("Which part would you like to edit?");
+            Console.WriteLine("1. Header");
+            Console.WriteLine("2. Content");
+            Console.WriteLine("3. Footer");
+            Console.WriteLine("4. Cancel");
+            Console.Write("Enter choice: ");
+
+            var choice = Console.ReadLine();
+
+            List<string> header = document.GetHeader();
+            List<string> content = document.GetContent();
+            List<string> footer = document.GetFooter();
+
+            switch (choice)
+            {
+                case "1":
+                    document.Edit(header, loggedInUser);
+                    break;
+                case "2":
+                    document.Edit(content, loggedInUser);
+                    break;
+                case "3":
+                    document.Edit(footer, loggedInUser);
+                    break;
+                case "4":
+                    Console.WriteLine();
+                    return;
+                default:
+                    Console.WriteLine("Invalid choice.");
+                    break;
+            }
+
+            Console.WriteLine("Press Enter to continue.");
             Console.ReadLine();
         }
 
@@ -222,7 +288,7 @@ namespace SDP_Assignment
             if (users.ContainsKey(username))
             {
                 document.AddCollaborator(users[username]);
-                Console.WriteLine("Collaborator added. Press Enter to continue.");
+                Console.WriteLine("Press Enter to continue.");
             }
             else
             {
@@ -236,22 +302,23 @@ namespace SDP_Assignment
             Console.Write("Enter approver username: ");
             var username = Console.ReadLine();
 
-            if (users.ContainsKey(username))
+            if (!users.ContainsKey(username))
             {
-                document.SetApprover(users[username]);
-                Console.WriteLine("Approver set. Press Enter to continue.");
+                Console.WriteLine("User not found. Please enter a valid username.");
+                Console.ReadLine();
+                return;
             }
-            else
-            {
-                Console.WriteLine("User not found. Press Enter to try again.");
-            }
+
+            var user = users[username];
+            document.SetApprover(user);
+            Console.WriteLine("Press Enter to continue.");
             Console.ReadLine();
         }
 
         static void SubmitDocument(Document document)
         {
-            document.Submit(loggedInUser);
-            Console.WriteLine("Document submitted. Press Enter to continue.");
+            document.SubmitForApproval(loggedInUser);
+            Console.WriteLine("Press Enter to continue.");
             Console.ReadLine();
         }
 
@@ -277,8 +344,8 @@ namespace SDP_Assignment
                 return;
             }
 
-            converter.Convert(document.Content);
-            Console.WriteLine("Document converted. Press Enter to continue.");
+            //converter.Convert(document.GetContent());
+            Console.WriteLine("Press Enter to continue.");
             Console.ReadLine();
         }
     }
