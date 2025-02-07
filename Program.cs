@@ -150,24 +150,59 @@ namespace SDP_Assignment
         static void ViewDocuments()
         {
             Console.Clear();
-            Console.WriteLine("==== Your Documents ====");
-
-            foreach (var doc in documents)
+            if (documents.Count == 0)
             {
-                if (doc.IsAssociatedWithUser(loggedInUser))
-                {
-                    Console.WriteLine($"- {doc.Title} [State: {doc.CurrentStateName}]");
-                    DocumentActions(doc);
-                }
+                Console.WriteLine("No documents available.");
+                Console.WriteLine("Press Enter to return to the menu.");
+                Console.ReadLine();
+                return;
             }
 
-            Console.WriteLine("Press Enter to return to the menu.");
-            Console.ReadLine();
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine("==== Your Documents ====");
+
+                for (int i = 0; i < documents.Count; i++)
+                {
+                    string docType = documents[i].GetType().Name.Replace("Document", ""); // Extracts "Technical Report" or "Grant Proposal"
+                    Console.WriteLine($"{i + 1}. [{docType}] {documents[i].Title} [State: {documents[i].CurrentStateName}]");
+                }
+
+                Console.WriteLine("0. Back to Main Menu");
+                Console.Write("Select a document (Enter number): ");
+
+                if (int.TryParse(Console.ReadLine(), out int choice))
+                {
+                    if (choice == 0)
+                        return;
+
+                    if (choice > 0 && choice <= documents.Count)
+                    {
+                        Document selectedDocument = documents[choice - 1];
+                        DocumentActions(selectedDocument);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid selection. Press Enter to try again.");
+                        Console.ReadLine();
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Invalid input. Press Enter to try again.");
+                    Console.ReadLine();
+                }
+            }
         }
 
         static void DocumentActions(Document document)
         {
-            Console.WriteLine($"Document: {document.Title}");
+            Console.Clear();
+            string docType = document.GetType().Name.Replace("Document", "");
+
+            Console.WriteLine($"==== {docType}: {document.Title} ====");
+
             while (true)
             {
                 Console.WriteLine("1. Edit Document");
@@ -175,9 +210,8 @@ namespace SDP_Assignment
                 Console.WriteLine("3. Set Approver");
                 Console.WriteLine("4. Submit Document");
                 Console.WriteLine("5. Convert Document");
-                Console.WriteLine("6. Undo");
-                Console.WriteLine("7. Redo");
-                Console.WriteLine("0. Back");
+                Console.WriteLine("6. View Version History");
+                Console.WriteLine("7. Back");
                 Console.Write("Choose an action: ");
 
                 var choice = Console.ReadLine();
@@ -199,12 +233,9 @@ namespace SDP_Assignment
                         ConvertDocument(document);
                         break;
                     case "6":
-                        document.UndoLastCommand();
+                        ShowVersionHistoryMenu(document);
                         break;
                     case "7":
-                        document.RedoLastCommand();
-                        break;
-                    case "0":
                         return;
                     default:
                         Console.WriteLine("Invalid choice. Try again.");
@@ -221,29 +252,16 @@ namespace SDP_Assignment
                 Console.WriteLine();
                 return;
             }
+            if (document.getState() == document.ApprovedState)
+            {
+                Console.WriteLine("Document cannot be edited after being approved!");
+                Console.WriteLine();
+                return;
+            }
             Console.Clear();
             Console.WriteLine("==== Editing Document ====");
             Console.WriteLine($"Title: {document.Title}");
             Console.WriteLine("--------------------------------------------------");
-            Console.WriteLine("Header:");
-            foreach (string i in document.GetHeader())
-            {
-                Console.WriteLine(i);
-            }
-            Console.WriteLine("--------------------------------------------------");
-            Console.WriteLine("Content:");
-            foreach (string i in document.GetContent())
-            {
-                Console.WriteLine(i);
-            }
-            Console.WriteLine("--------------------------------------------------");
-            Console.WriteLine("Footer:");
-            foreach (string i in document.GetFooter())
-            {
-                Console.WriteLine(i);
-            }
-            Console.WriteLine("--------------------------------------------------");
-
             Console.WriteLine("Which part would you like to edit?");
             Console.WriteLine("1. Header");
             Console.WriteLine("2. Content");
@@ -278,6 +296,66 @@ namespace SDP_Assignment
 
             Console.WriteLine("Press Enter to continue.");
             Console.ReadLine();
+        }
+
+        static void ShowVersionHistoryMenu(Document document)
+        {
+            Console.Clear();
+            Console.WriteLine($"==== Version History: {document.Title} ====");
+
+            var versions = document.GetVersions();
+            if (versions.Count == 0)
+            {
+                Console.WriteLine("No versions available.");
+                Console.WriteLine("Press Enter to return.");
+                Console.ReadLine();
+                return;
+            }
+
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine($"Document: {document.Title}");
+                Console.WriteLine("Select a version to view:");
+
+                for (int i = 0; i < versions.Count; i++)
+                {
+                    Console.WriteLine($"{i + 1}. Version at {versions[i].Timestamp}");
+                }
+                Console.WriteLine("0. Back");
+
+                Console.Write("Enter your choice: ");
+                if (int.TryParse(Console.ReadLine(), out int choice))
+                {
+                    if (choice == 0)
+                        return;
+
+                    if (choice > 0 && choice <= versions.Count)
+                    {
+                        var version = versions[choice - 1];
+                        Console.Clear();
+                        Console.WriteLine($"==== Viewing Version: {version.Timestamp} ====");
+                        Console.WriteLine("Header:");
+                        foreach (var line in version.Header) Console.WriteLine(line);
+                        Console.WriteLine("\nContent:");
+                        foreach (var line in version.Content) Console.WriteLine(line);
+                        Console.WriteLine("\nFooter:");
+                        foreach (var line in version.Footer) Console.WriteLine(line);
+                        Console.WriteLine("\nPress Enter to go back.");
+                        Console.ReadLine();
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid choice. Press Enter to try again.");
+                        Console.ReadLine();
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Invalid input. Press Enter to try again.");
+                    Console.ReadLine();
+                }
+            }
         }
 
         static void DisplayEditMenu(Document document, List<string> section, User user)
@@ -348,6 +426,7 @@ namespace SDP_Assignment
 
                     case "4":
                         Console.WriteLine("Editing complete.");
+                        document.FinishEditing();
                         return;
 
                     default:
@@ -401,29 +480,44 @@ namespace SDP_Assignment
 
         static void ConvertDocument(Document document)
         {
-            Console.WriteLine("Choose format to convert:");
-            Console.WriteLine("1. PDF");
-            Console.WriteLine("2. Word");
-            Console.Write("Enter choice: ");
-            var choice = Console.ReadLine();
-
-            IFormatConverter converter = choice switch
+            while (true)
             {
-                "1" => new PDFConverter(),
-                "2" => new WordConverter(),
-                _ => null
-            };
+                Console.Clear();
+                Console.WriteLine($"==== Convert Document: {document.Title} ====");
+                Console.WriteLine("Choose format to convert:");
+                Console.WriteLine("1. PDF");
+                Console.WriteLine("2. Word");
+                Console.WriteLine("3. Cancel");
+                Console.Write("Enter choice: ");
 
-            if (converter == null)
-            {
-                Console.WriteLine("Invalid choice. Press Enter to return to the menu.");
+                var choice = Console.ReadLine();
+
+                if (choice == "3" || string.IsNullOrWhiteSpace(choice))
+                {
+                    Console.WriteLine("Conversion canceled. Press Enter to return.");
+                    Console.ReadLine();
+                    return;
+                }
+
+                IFormatConverter converter = choice switch
+                {
+                    "1" => new PDFConverter(),
+                    "2" => new WordConverter(),
+                    _ => null
+                };
+
+                if (converter == null)
+                {
+                    Console.WriteLine("Invalid choice. Press Enter to try again.");
+                    Console.ReadLine();
+                    continue;
+                }
+
+                //converter.Convert(document.GetContent());
+                Console.WriteLine("Document converted successfully. Press Enter to continue.");
                 Console.ReadLine();
                 return;
             }
-
-            //converter.Convert(document.GetContent());
-            Console.WriteLine("Press Enter to continue.");
-            Console.ReadLine();
         }
     }
 }
