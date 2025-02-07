@@ -49,7 +49,7 @@ namespace SDP_Assignment
             Console.WriteLine("Cannot approve a rejected document.");
         }
 
-        public void reject()
+        public void reject(string reason)
         {
             Console.WriteLine("Document is already rejected.");
         }

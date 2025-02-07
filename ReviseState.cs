@@ -41,7 +41,7 @@ namespace SDP_Assignment
             Console.WriteLine("Cannot approve a document in revision.");
         }
 
-        public void reject()
+        public void reject(string reason)
         {
             Console.WriteLine("Cannot reject a document in revision.");
         }

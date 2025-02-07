@@ -43,7 +43,7 @@ namespace SDP_Assignment
             Console.WriteLine("Cannot approve a draft document.");
         }
 
-        public void reject()
+        public void reject(string reason)
         {
             Console.WriteLine("Cannot reject a draft document.");
         }

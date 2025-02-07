@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace SDP_Assignment
 {
@@ -37,19 +38,19 @@ namespace SDP_Assignment
 
         public void approve()
         {
-            Console.WriteLine("Document approved.");
+            doc.NotifyObservers("Document approved.");
             doc.SetState(doc.ApprovedState);
         }
 
-        public void reject()
+        public void reject(string reason)
         {
-            Console.WriteLine("Document rejected.");
+            doc.NotifyObservers("Document rejected. Reason: " + reason);
             doc.SetState(doc.RejectedState);
         }
 
         public void pushBack(string comment)
         {
-            Console.WriteLine("Document needs revision: " + comment);
+            doc.NotifyObservers("Document needs revision: " + comment);
             doc.SetState(doc.ReviseState);
         }
 

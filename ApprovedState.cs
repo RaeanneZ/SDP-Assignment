@@ -35,7 +35,7 @@ namespace SDP_Assignment
             Console.WriteLine("Document is already approved.");
         }
 
-        public void reject()
+        public void reject(string reason)
         {
             Console.WriteLine("Cannot reject an approved document.");
         }

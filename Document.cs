@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Xml.Linq;
 
 namespace SDP_Assignment
 {
@@ -135,16 +136,7 @@ namespace SDP_Assignment
         {
             if (IsOwnerOrCollaborator(user))
             {
-                if (state != reviewState)
-                {
-                    ExecuteCommand(new EditDocumentCommand(this, section, user, action, text, lineNumber));
-
-                    NotifyObservers("Document '" + Title + "' was edited by " + user.Name + ".");
-                }
-                else
-                {
-                    Console.WriteLine("Document cannot be edited in review state!");
-                }
+                ExecuteCommand(new EditDocumentCommand(this, section, user, action, text, lineNumber));
             }
             else
             {
@@ -231,7 +223,7 @@ namespace SDP_Assignment
             state.approve();
         }
 
-        public void Reject()
+        public void Reject(string reason)
         {
             if (approver == null)
             {
@@ -243,7 +235,7 @@ namespace SDP_Assignment
                 Console.WriteLine("Document must be under review to be rejected.");
                 return;
             }
-            state.reject();
+            state.reject(reason);
         }
 
         public void PushBack(string comment)
@@ -325,7 +317,6 @@ namespace SDP_Assignment
             if (IsOwnerOrCollaborator(user))
             {
                 header.Add(newHeader);
-                NotifyObservers($"Document '{Title}' header updated by {user.Name}.");
             }
             else
             {
@@ -338,7 +329,6 @@ namespace SDP_Assignment
             if (IsOwnerOrCollaborator(user))
             {
                 content.Add(newContent);
-                NotifyObservers($"Document '{Title}' content updated by {user.Name}.");
             }
             else
             {
@@ -351,7 +341,6 @@ namespace SDP_Assignment
             if (IsOwnerOrCollaborator(user))
             {
                 footer.Add(newFooter);
-                NotifyObservers($"Document '{Title}' footer updated by {user.Name}.");
             }
             else
             {
