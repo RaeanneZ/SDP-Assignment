@@ -45,11 +45,6 @@ namespace SDP_Assignment
             Console.WriteLine("Cannot push back an approved document.");
         }
 
-        public void resubmit()
-        {
-            Console.WriteLine("Cannot resubmit an approved document.");
-        }
-
         public void edit(List<string> section, User collaborator, string action, string text = "", int lineNumber = -1)
         {
             Console.WriteLine("Cannot edit an approved document.");

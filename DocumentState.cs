@@ -14,7 +14,6 @@ namespace SDP_Assignment
         public void approve();
         public void reject();
         public void pushBack(string comment);
-        public void resubmit();
         public void edit(List<string> section, User collaborator, string action, string text = "", int lineNumber = -1);
     }
 

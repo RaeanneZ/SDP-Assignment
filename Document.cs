@@ -258,18 +258,6 @@ namespace SDP_Assignment
             }
         }
 
-        public void Resubmit()
-        {
-            if (state == reviseState || state == rejectedState)
-            {
-                state.resubmit();
-            }
-            else
-            {
-                Console.WriteLine("Only rejected or revised documents can be resubmitted.");
-            }
-        }
-
         public void ConvertDocument()
         {
             if (formatConverter == null)

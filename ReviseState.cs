@@ -51,11 +51,6 @@ namespace SDP_Assignment
             Console.WriteLine("Document is already in revision.");
         }
 
-        public void resubmit()
-        {
-            Console.WriteLine("Document is already in revision.");
-        }
-
         public void edit(List<string> section, User collaborator, string action, string text = "", int lineNumber = -1)
         {
             if (!doc.IsOwnerOrCollaborator(collaborator))

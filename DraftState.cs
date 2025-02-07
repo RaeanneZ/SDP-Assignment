@@ -23,6 +23,7 @@ namespace SDP_Assignment
         public void submit()
         {
             doc.SetState(doc.ReviewState);
+            doc.NotifyObservers("Document '" + doc.Title + "' submitted for approval.");
         }
 
         public void setApprover(User collaborator)
@@ -50,11 +51,6 @@ namespace SDP_Assignment
         public void pushBack(string comment)
         {
             Console.WriteLine("Cannot push back a draft document.");
-        }
-
-        public void resubmit()
-        {
-            Console.WriteLine("Cannot resubmit a draft document.");
         }
 
         public void edit(List<string> section, User collaborator, string action, string text = "", int lineNumber = -1)

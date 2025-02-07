@@ -53,11 +53,6 @@ namespace SDP_Assignment
             doc.SetState(doc.ReviseState);
         }
 
-        public void resubmit() 
-        { 
-            Console.WriteLine("Document is already under review."); 
-        }
-
         public void edit(List<string> section, User collaborator, string action, string text = "", int lineNumber = -1)
         {
             Console.WriteLine("Cannot edit document under review.");
