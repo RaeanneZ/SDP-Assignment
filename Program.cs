@@ -1,4 +1,6 @@
+using System;
 using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 
 namespace SDP_Assignment
 {
@@ -165,8 +167,19 @@ namespace SDP_Assignment
 
                 for (int i = 0; i < documents.Count; i++)
                 {
-                    string docType = documents[i].GetType().Name.Replace("Document", ""); // Extracts "Technical Report" or "Grant Proposal"
+
+                    string docType = documents[i].GetType().Name.Replace("Document", ""); // extracts "Technical Report" or "Grant Proposal"
                     Console.WriteLine($"{i + 1}. [{docType}] {documents[i].Title} [State: {documents[i].CurrentStateName}]");
+
+                    if (doc.Approver == loggedInUser)
+                    {
+                        ApproverActions(doc);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"- {doc.Title} [State: {doc.CurrentStateName}]");
+                        DocumentActions(doc);
+                    }
                 }
 
                 Console.WriteLine("0. Back to Main Menu");
@@ -193,6 +206,41 @@ namespace SDP_Assignment
                     Console.WriteLine("Invalid input. Press Enter to try again.");
                     Console.ReadLine();
                 }
+            }
+        }
+
+        static void ApproverActions(Document document)
+        {
+            DisplayDocument(document);
+
+            Console.WriteLine("Select action: ");
+            Console.WriteLine("1. Approve");
+            Console.WriteLine("2. Push back");
+            Console.WriteLine("3. Reject");
+            Console.WriteLine("4. Cancel");
+            Console.Write("Enter choice: ");
+            var choice = Console.ReadLine();
+
+            switch (choice)
+            {
+                case "1":
+                    document.Approve();
+                    break;
+                case "2":
+                    Console.Write("Enter a comment to push back with: ");
+                    string comment = Console.ReadLine();
+                    document.PushBack(comment);
+                    break;
+                case "3":
+                    Console.WriteLine("Enter reason for rejection: ");
+                    string reason = Console.ReadLine();
+                    document.Reject(reason);
+                    break;
+                case "4":
+                    return;
+                default:
+                    Console.WriteLine("Invalid choice.");
+                    break;
             }
         }
 
@@ -262,6 +310,9 @@ namespace SDP_Assignment
             Console.WriteLine("==== Editing Document ====");
             Console.WriteLine($"Title: {document.Title}");
             Console.WriteLine("--------------------------------------------------");
+            DisplayDocument(document);
+
+
             Console.WriteLine("Which part would you like to edit?");
             Console.WriteLine("1. Header");
             Console.WriteLine("2. Content");
@@ -297,6 +348,7 @@ namespace SDP_Assignment
             Console.WriteLine("Press Enter to continue.");
             Console.ReadLine();
         }
+
 
         static void ShowVersionHistoryMenu(Document document)
         {
@@ -356,6 +408,29 @@ namespace SDP_Assignment
                     Console.ReadLine();
                 }
             }
+
+        static void DisplayDocument(Document document)
+        {
+            Console.WriteLine($"Title: {document.Title}");
+            Console.WriteLine("--------------------------------------------------");
+            Console.WriteLine("Header:");
+            foreach (string i in document.GetHeader())
+            {
+                Console.WriteLine(i);
+            }
+            Console.WriteLine("--------------------------------------------------");
+            Console.WriteLine("Content:");
+            foreach (string i in document.GetContent())
+            {
+                Console.WriteLine(i);
+            }
+            Console.WriteLine("--------------------------------------------------");
+            Console.WriteLine("Footer:");
+            foreach (string i in document.GetFooter())
+            {
+                Console.WriteLine(i);
+            }
+            Console.WriteLine("--------------------------------------------------");
         }
 
         static void DisplayEditMenu(Document document, List<string> section, User user)

@@ -23,7 +23,13 @@ namespace SDP_Assignment
 
         public void submit()
         {
-            Console.WriteLine("Cannot submit a rejected document.");
+            if (!isEdited)
+            {
+                Console.WriteLine("Document must be edited first!");
+                return;
+            }
+            Console.WriteLine("Document resubmitted for review.");
+            doc.SetState(doc.ReviewState);
         }
 
         public void setApprover(User collaborator)
@@ -43,7 +49,7 @@ namespace SDP_Assignment
             Console.WriteLine("Cannot approve a rejected document.");
         }
 
-        public void reject()
+        public void reject(string reason)
         {
             Console.WriteLine("Document is already rejected.");
         }
@@ -51,18 +57,6 @@ namespace SDP_Assignment
         public void pushBack(string comment)
         {
             Console.WriteLine("Cannot push back a rejected document.");
-        }
-
-        public void resubmit()
-        {
-            if (!isEdited)
-            {
-                Console.WriteLine("Document must be edited first!");
-                return;
-            }
-
-            Console.WriteLine("Document resubmitted for review.");
-            doc.SetState(doc.ReviewState);
         }
 
         public void edit(List<string> section, User collaborator, string action, string text = "", int lineNumber = -1)

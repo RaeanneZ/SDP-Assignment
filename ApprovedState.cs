@@ -35,7 +35,7 @@ namespace SDP_Assignment
             Console.WriteLine("Document is already approved.");
         }
 
-        public void reject()
+        public void reject(string reason)
         {
             Console.WriteLine("Cannot reject an approved document.");
         }
@@ -43,11 +43,6 @@ namespace SDP_Assignment
         public void pushBack(string comment)
         {
             Console.WriteLine("Cannot push back an approved document.");
-        }
-
-        public void resubmit()
-        {
-            Console.WriteLine("Cannot resubmit an approved document.");
         }
 
         public void edit(List<string> section, User collaborator, string action, string text = "", int lineNumber = -1)
