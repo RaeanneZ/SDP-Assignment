@@ -31,8 +31,7 @@ namespace SDP_Assignment
         private Stack<DocumentCommand> redoStack = new Stack<DocumentCommand>();
 
         // Collaborators list now stores UserComponent (User or UserGroup)
-        // Store Collaborators with Access Levels
-        private Dictionary<UserComponent, AccessLevel> collaborators = new Dictionary<UserComponent, AccessLevel>();
+        private List<UserComponent> collaborators = new List<UserComponent>();
 
 
         private DocumentVersionHistory versionHistory = new DocumentVersionHistory();
@@ -91,7 +90,7 @@ namespace SDP_Assignment
             return footer;
         }
 
-        public Dictionary<UserComponent, AccessLevel> Collaborators
+        public List<UserComponent> Collaborators
         {
             get { return collaborators; }
         }
@@ -140,7 +139,7 @@ namespace SDP_Assignment
             Console.WriteLine("Finished editing. Version has been added to version history.");
         }
 
-        public void AddCollaborator(UserComponent collaborator, AccessLevel accessLevel)
+        public void AddCollaborator(UserComponent collaborator)
         {
             if (IsOwnerOrCollaborator(collaborator))
             {
@@ -148,30 +147,76 @@ namespace SDP_Assignment
                 return;
             }
 
-            if (collaborator is User user && approver == user) // Ensures approver is not added
+            if (collaborator is User user && approver == user)
             {
                 Console.WriteLine("Approver cannot be added as a collaborator!");
                 return;
             }
 
-            collaborators[collaborator] = accessLevel;
-            NotifyObservers($"Collaborator '{collaborator.Name}' added to document '{Title}' with {accessLevel} access.");
+            collaborators.Add(collaborator);
+            RegisterObserver(collaborator);
 
+            if (collaborator is UserGroup group)
+            {
+                // Add the group as a collaborator
+                collaborators.Add(group);
+                RegisterObserver(group);
+
+                // Do not add duplicate names if already in the collaborator list
+                foreach (var member in group.GetUsers())
+                {
+                    if (!collaborators.Contains(member))
+                    {
+                        collaborators.Add(member);
+                        RegisterObserver(member);
+                        NotifyObservers($"Collaborator '{member.Name}' from group '{group.Name}' added to document '{Title}'.");
+                    }
+                }
+            }
+            else
+            {
+                // Add individual user as a collaborator
+                collaborators.Add(collaborator);
+                RegisterObserver(collaborator);
+                NotifyObservers($"Collaborator '{collaborator.Name}' added to document '{Title}'.");
+            }
 
             ExecuteCommand(new AddCollaboratorCommand(this, collaborator));
-            RegisterObserver(collaborator); // Works for both User and UserGroup
         }
+
 
         public void RemoveCollaborator(UserComponent collaborator) // UPDATED
         {
-            if (!Collaborators.ContainsKey(collaborator))
+            if (!IsOwnerOrCollaborator(collaborator))
             {
                 Console.WriteLine($"{collaborator.Name} is not a collaborator.");
+                return;
+                //AddVersion();
             }
 
-            Collaborators.Remove(collaborator);
-            NotifyObservers($"Collaborator '{collaborator.Name}' removed from document '{Title}'.");
-            RemoveObserver(collaborator);
+            if (collaborator is UserGroup group)
+            {
+                // Remove the group from collaborators
+                collaborators.Remove(group);
+                RemoveObserver(group);
+
+                // Remove all members of the group from collaborators
+                foreach (var member in group.GetUsers())
+                {
+                    if (collaborators.Contains(member))
+                    {
+                        collaborators.Remove(member);
+                        RemoveObserver(member);
+                        NotifyObservers($"Collaborator '{member.Name}' from group '{group.Name}' removed from document '{Title}'.");
+                    }
+                }
+            }
+            else
+            {
+                Collaborators.Remove(collaborator);
+                NotifyObservers($"Collaborator '{collaborator.Name}' removed from document '{Title}'.");
+                RemoveObserver(collaborator);
+            }
         }
 
         public void Edit(List<string> section, User user, string action, string text = "", int lineNumber = -1)
@@ -259,7 +304,7 @@ namespace SDP_Assignment
                 return;
             }
 
-            if (collaborators.ContainsKey(user))
+            if (collaborators.Contains(user))
             {
                 Console.WriteLine("Approver cannot be a collaborator.");
                 return;
@@ -275,40 +320,40 @@ namespace SDP_Assignment
             Console.WriteLine($"=== Collaborators for Document: {Title} ===");
             foreach (var entry in collaborators)
             {
-                Console.WriteLine($"{entry.Key.Name} - {entry.Value}");
+                Console.WriteLine($"{entry.Name}");
             }
-        }
-
-        public bool HasWriteAccess(UserComponent user)
-        {
-            return collaborators.ContainsKey(user) && collaborators[user] == AccessLevel.ReadWrite;
         }
 
         public void EditContent(UserComponent user, string newContent)
         {
-            if (!HasWriteAccess(user))
-            {
-                Console.WriteLine($"{user.Name} does not have write access.");
-                return;
-            }
-
             NotifyObservers($"Document '{Title}' content updated by {user.Name}.");
         }
 
-        public bool IsOwnerOrCollaborator(UserComponent userComponent) // UPDATED
+        public bool IsOwnerOrCollaborator(UserComponent userComponent)
         {
             if (userComponent is User user)
             {
-                return owner == user || collaborators.ContainsKey(user);
+                // Check if the user is the owner or directly added as a collaborator
+                return owner == user || collaborators.Contains(user);
             }
 
             if (userComponent is UserGroup group)
             {
-                return collaborators.ContainsKey(group) || group.GetUsers().Exists(member => IsOwnerOrCollaborator(member));
+                // Check if the group is directly added as a collaborator
+                if (collaborators.Contains(group))
+                    return true;
+
+                // Check if any member of the group is a collaborator
+                foreach (var member in group.GetUsers())
+                {
+                    if (collaborators.Contains(member))
+                        return true;
+                }
             }
 
             return false;
         }
+
 
         public void Approve()
         {
@@ -357,10 +402,29 @@ namespace SDP_Assignment
 
         public bool IsAssociatedWithUser(User user)
         {
-            return owner == user || Collaborators.ContainsKey(user) || approver == user;
+            if (owner == user || approver == user)
+            {
+                return true;
+            }
+
+            foreach (var collaborator in collaborators)
+            {
+                if (collaborator is User collaboratorUser && collaboratorUser == user)
+                {
+                    return true;
+                }
+
+                if (collaborator is UserGroup group && group.GetUsers().Contains(user))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
-        
-        
+
+
+
         // Observer Pattern -------------------------------------------------------------------------------------------
         public void RegisterObserver(Observer observer) // UPDATED
         {

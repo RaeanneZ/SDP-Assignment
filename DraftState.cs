@@ -17,25 +17,10 @@ namespace SDP_Assignment
 
         public void add(UserComponent collaborator)
         {
-            // Ask the owner for access level
-            Console.WriteLine($"Select access level for {collaborator.Name}:");
-            Console.WriteLine("1. Read-Only");
-            Console.WriteLine("2. Read & Write");
-            Console.Write("Enter choice: ");
-            string accessChoice = Console.ReadLine();
-
-            AccessLevel accessLevel = accessChoice switch
-            {
-                "1" => AccessLevel.ReadOnly,
-                "2" => AccessLevel.ReadWrite,
-                _ => AccessLevel.ReadOnly
-            };
-
-            doc.AddCollaborator(collaborator, accessLevel);
-
-            //doc.NotifyObservers($"{collaborator.Name} has been added as collaborator.");
-            //doc.Collaborators.Add(collaborator);
-            //doc.RegisterObserver(collaborator);
+            doc.AddCollaborator(collaborator);
+            doc.NotifyObservers($"{collaborator.Name} has been added as collaborator.");
+            doc.Collaborators.Add(collaborator);
+            doc.RegisterObserver(collaborator);
         }
 
         public void submit()

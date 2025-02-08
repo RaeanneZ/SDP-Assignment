@@ -316,44 +316,36 @@ namespace SDP_Assignment
 
         static void ViewDocuments()
         {
-            Console.Clear();
-            Console.WriteLine("=== View Documents ===");
-            Console.WriteLine("1. List all documents owned by you");
-            Console.WriteLine("2. List all documents accessible to you");
-            Console.Write("Select Option: ");
-            string decision = Console.ReadLine();
-            Console.WriteLine();
-
-            switch (decision)
-            {
-                case "1":
-                    DisplayOwnedDocuments(documents);
-                    break;
-                case "2":
-                    DisplayAccessibleDocuments(documents);
-                    break;
-                default:
-                    break;
-
-            }
-
-            // Iterate over a COPY of the list to avoid modification issues
-            foreach (var doc in documents.ToList()) // <-- Add .ToList()
-            {
-                if (doc.IsAssociatedWithUser(loggedInUser))
-                {
-                    Console.WriteLine($"- {doc.Title} [State: {doc.CurrentStateName}]");
-                    DocumentActions(doc);
-                }
-            }
-
-            Console.WriteLine("Press Enter to return to the menu.");
-            Console.ReadLine();
-        
-
             while (true)
             {
+                Console.Clear();
+                Console.WriteLine("=== View Documents ===");
+                Console.WriteLine("1. List all documents owned by you");
+                Console.WriteLine("2. List all documents accessible to you");
                 Console.WriteLine("0. Back to Main Menu");
+                Console.Write("Select Option: ");
+
+                string decision = Console.ReadLine();
+                Console.WriteLine();
+
+                switch (decision)
+                {
+                    case "1":
+                        DisplayOwnedDocuments(documents);
+                        break;
+                    case "2":
+                        DisplayAccessibleDocuments(documents);
+                        break;
+                    case "0":
+                        return;
+                    default:
+                        Console.WriteLine("Invalid option. Press Enter to try again.");
+                        Console.ReadLine();
+                        continue;
+
+                }
+
+            
                 Console.Write("Select a document (Enter number): ");
 
                 if (int.TryParse(Console.ReadLine(), out int choice))
@@ -385,6 +377,20 @@ namespace SDP_Assignment
                     Console.WriteLine("Invalid input. Press Enter to try again.");
                     Console.ReadLine();
                 }
+            
+
+                // Iterate over a COPY of the list to avoid modification issues
+                foreach (var doc in documents.ToList()) // <-- Add .ToList()
+                {
+                    if (doc.IsAssociatedWithUser(loggedInUser))
+                    {
+                        Console.WriteLine($"- {doc.Title} [State: {doc.CurrentStateName}]");
+                        DocumentActions(doc);
+                    }
+                }
+
+                Console.WriteLine("Press Enter to return to the menu.");
+                Console.ReadLine();
             }
         }
 
@@ -845,7 +851,7 @@ namespace SDP_Assignment
             for (int i = 0; i < documents.Count; i++)
             {
                 Document doc = documents[i];
-                if (doc.Owner == loggedInUser || doc.Collaborators.ContainsKey(loggedInUser) || doc.Approver == loggedInUser)
+                if (doc.Owner == loggedInUser || doc.Collaborators.Contains(loggedInUser) || doc.Approver == loggedInUser)
                 {
                     string docType = documents[i].GetType().Name.Replace("Document", "");
                     Console.WriteLine($"{i + 1}. [{docType}] {documents[i].Title} [State: {documents[i].CurrentStateName}]");
