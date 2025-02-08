@@ -711,22 +711,8 @@ namespace SDP_Assignment
                 return;
             }
 
-            Console.WriteLine("Select access level: ");
-            Console.WriteLine("1. Read-Only");
-            Console.WriteLine("2. Read & Write");
-            Console.Write("Enter choice: ");
-            string accessChoice = Console.ReadLine();
-
-            AccessLevel accessLevel = accessChoice switch
-            {
-                "1" => AccessLevel.ReadOnly,
-                "2" => AccessLevel.ReadWrite,
-                _ => AccessLevel.ReadOnly
-            };
-
-            document.AddCollaborator(collaborator, accessLevel);
-            Console.WriteLine($"Added {collaborator.Name} as a collaborator with {accessLevel} access.");
-            Console.ReadLine();
+            // DELEGATE ADDING TO THE STATE
+            document.getState().add(collaborator);
         }
 
         static void SetApprover(Document document)
@@ -744,14 +730,14 @@ namespace SDP_Assignment
             if (!users.ContainsKey(username))
             {
                 Console.WriteLine("User not found. Please enter a valid username.");
-                Console.ReadLine();
+                Console.ReadLine ();
                 return;
             }
 
             var user = users[username];
-            document.SetApprover(user);
-            Console.WriteLine("Press Enter to continue.");
-            Console.ReadLine();
+
+            // Delegate to state pattern
+            document.getState().setApprover(user);
         }
 
         static void SubmitDocument(Document document)
@@ -763,7 +749,8 @@ namespace SDP_Assignment
                 return;
             }
 
-            document.SubmitForApproval(loggedInUser);
+            // Delegate to the state pattern
+            document.getState().submit();
             Console.WriteLine("Press Enter to continue.");
             Console.ReadLine();
         }
