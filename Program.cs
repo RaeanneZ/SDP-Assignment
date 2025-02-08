@@ -269,6 +269,49 @@ namespace SDP_Assignment
             }
         }
 
+        static void ApproverActions(Document document)
+        {
+            Console.Clear();
+            DisplayDocument(document);
+
+            Console.WriteLine("Select action: ");
+            Console.WriteLine("1. Approve");
+            Console.WriteLine("2. Push back");
+            Console.WriteLine("3. Reject");
+            Console.WriteLine("4. Cancel");
+            Console.Write("Enter choice: ");
+            var x = Console.ReadLine();
+
+            switch (x)
+            {
+                case "1":
+                    document.Approve();
+                    Console.WriteLine("Press Enter to continue.");
+                    Console.ReadLine();
+                    break;
+                case "2":
+                    Console.Write("Enter a comment to push back with: ");
+                    string comment = Console.ReadLine();
+                    document.PushBack(comment);
+                    Console.WriteLine("Press Enter to continue.");
+                    Console.ReadLine();
+                    break;
+                case "3":
+                    Console.WriteLine("Enter reason for rejection: ");
+                    string reason = Console.ReadLine();
+                    document.Reject(reason);
+                    Console.WriteLine("Press Enter to continue.");
+                    Console.ReadLine();
+                    break;
+                case "4":
+                    return;
+                default:
+                    Console.WriteLine("Invalid choice.");
+                    break;
+            }
+        }
+
+
         static void DocumentActions(Document document)
         {
             Console.Clear();
@@ -582,6 +625,78 @@ namespace SDP_Assignment
             document.Approver = user;
             Console.WriteLine("Press Enter to continue.");
             Console.ReadLine();
+        }
+
+        static void AddCollaborator(Document document)
+        {
+            if (document.Owner != loggedInUser)
+            {
+                Console.WriteLine("Only owner can add collaborator! Press enter to continue.");
+                Console.ReadLine();
+                return;
+            }
+            Console.Write("Enter collaborator username: ");
+            var username = Console.ReadLine();
+
+            if (users.ContainsKey(username))
+            {
+                document.AddCollaborator(users[username]);
+                Console.WriteLine("Press Enter to continue.");
+            }
+            else
+            {
+                Console.WriteLine("User not found. Press Enter to try again.");
+            }
+            Console.ReadLine();
+        }
+
+        static void SubmitDocument(Document document)
+        {
+            document.SubmitForApproval(loggedInUser);
+            Console.WriteLine("Press Enter to continue.");
+            Console.ReadLine();
+        }
+
+        static void ConvertDocument(Document document)
+        {
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine($"==== Convert Document: {document.Title} ====");
+                Console.WriteLine("Choose format to convert:");
+                Console.WriteLine("1. PDF");
+                Console.WriteLine("2. Word");
+                Console.WriteLine("3. Cancel");
+                Console.Write("Enter choice: ");
+
+                var choice = Console.ReadLine();
+
+                if (choice == "3" || string.IsNullOrWhiteSpace(choice))
+                {
+                    Console.WriteLine("Conversion canceled. Press Enter to return.");
+                    Console.ReadLine();
+                    return;
+                }
+
+                IFormatConverter converter = choice switch
+                {
+                    "1" => new PDFConverter(),
+                    "2" => new WordConverter(),
+                    _ => null
+                };
+
+                if (converter == null)
+                {
+                    Console.WriteLine("Invalid choice. Press Enter to try again.");
+                    Console.ReadLine();
+                    continue;
+                }
+
+                //converter.Convert(document.GetContent());
+                Console.WriteLine("Document converted successfully. Press Enter to continue.");
+                Console.ReadLine();
+                return;
+            }
         }
     }
 }

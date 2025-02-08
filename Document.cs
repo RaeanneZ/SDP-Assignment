@@ -115,6 +115,7 @@ namespace SDP_Assignment
             rejectedState = new RejectedState(this);
             reviseState = new ReviseState(this);
 
+            RegisterObserver(owner);
             state = draftState;
         }
 
@@ -146,6 +147,9 @@ namespace SDP_Assignment
             {
                 Console.WriteLine($"{userComponent.Name} is already a collaborator.");
                 return;
+                
+                header.Add(newHeader);
+                AddVersion();
             }
 
             if (userComponent is User user && approver == user) // Ensures approver is not added
@@ -163,6 +167,11 @@ namespace SDP_Assignment
         {
             if (!Collaborators.Contains(userComponent))
             {
+                content.Add(newContent);
+                AddVersion();
+            }
+            else
+            {
                 Console.WriteLine($"{userComponent.Name} is not a collaborator.");
                 return;
             }
@@ -177,6 +186,8 @@ namespace SDP_Assignment
             if (IsOwnerOrCollaborator(user))
             {
                 ExecuteCommand(new EditDocumentCommand(this, section, user, action, text, lineNumber));
+                footer.Add(newFooter);
+                AddVersion();
             }
             else
             {
@@ -229,18 +240,35 @@ namespace SDP_Assignment
             }
         }
 
+
         public void SetFooter(string newFooter, User user)
         {
-            if (IsOwnerOrCollaborator(user))
+          if (IsOwnerOrCollaborator(user))
+          {
+            footer.Add(newFooter);
+            AddVersion();
+            NotifyObservers($"Document '{Title}' footer updated by {user.Name}.");
+          }
+          else
+          {
+            Console.WriteLine("Only owner or collaborators can edit.");
+          }
+        }
+
+        public void SubmitForApproval(User user)
+        {
+            if (approver == null)
             {
-                footer.Add(newFooter);
-                AddVersion();
-                NotifyObservers($"Document '{Title}' footer updated by {user.Name}.");
+                Console.WriteLine("Please set an approver first!");
+                Console.WriteLine();
+                return;
             }
-            else
-            {
-                Console.WriteLine("Only owner or collaborators can edit.");
-            }
+            ExecuteCommand(new SubmitCommand(this, ReviewState));
+        }
+
+        public void SetApprover(User user)
+        {
+            approver = user
         }
 
         public bool IsOwnerOrCollaborator(UserComponent userComponent) // UPDATED
@@ -260,29 +288,14 @@ namespace SDP_Assignment
 
         public void Approve()
         {
-            if (approver == null)
-            {
-                Console.WriteLine("No approver assigned.");
-                return;
-            }
-            if (state != reviewState)
-            {
-                Console.WriteLine("Document must be under review to be approved.");
-                return;
-            }
             state.approve();
         }
 
         public void Reject(string reason)
         {
-            if (approver == null)
-            {
-                Console.WriteLine("No approver assigned.");
-                return;
-            }
             if (state != reviewState)
             {
-                Console.WriteLine("Document must be under review to be rejected.");
+                Console.WriteLine($"Document '{Title}'  must be under review to be rejected.");
                 return;
             }
             state.reject(reason);
@@ -290,14 +303,12 @@ namespace SDP_Assignment
 
         public void PushBack(string comment)
         {
-            if (state == reviewState)
+            if (state != reviewState)
             {
-                state.pushBack(comment);
+                Console.WriteLine("Document must be under review to be push back.");
+                return;
             }
-            else
-            {
-                Console.WriteLine("Document must be in review state to be pushed back.");
-            }
+            state.pushBack(comment);
         }
 
         public void ConvertDocument()

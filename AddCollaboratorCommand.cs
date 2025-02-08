@@ -30,6 +30,7 @@ namespace SDP_Assignment
 
         public void Redo()
         {
+            doc.NotifyObservers($"{collaborator.Name} has been added as collaborator.");
             Execute();
         }
     }
