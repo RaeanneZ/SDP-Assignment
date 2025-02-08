@@ -334,15 +334,15 @@ namespace SDP_Assignment
             }
             state.pushBack(comment);
         }
-
-        public void ConvertDocument()
+        public Document ConvertDocument()
         {
             if (formatConverter == null)
             {
                 Console.WriteLine("No format converter set.");
-                return;
+                return null;
             }
-            //formatConverter.Convert(content);
+            Document convertedDocument = formatConverter.Convert(this);
+            return convertedDocument;
         }
 
         public void SetFormatConverter(IFormatConverter converter)

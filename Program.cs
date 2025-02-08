@@ -337,6 +337,20 @@ namespace SDP_Assignment
 
             }
 
+            // Iterate over a COPY of the list to avoid modification issues
+            foreach (var doc in documents.ToList()) // <-- Add .ToList()
+            {
+                if (doc.IsAssociatedWithUser(loggedInUser))
+                {
+                    Console.WriteLine($"- {doc.Title} [State: {doc.CurrentStateName}]");
+                    DocumentActions(doc);
+                }
+            }
+
+            Console.WriteLine("Press Enter to return to the menu.");
+            Console.ReadLine();
+        }
+
             while (true)
             {
                 Console.WriteLine("0. Back to Main Menu");
@@ -789,13 +803,19 @@ namespace SDP_Assignment
                     Console.ReadLine();
                     continue;
                 }
+              
+                // Set the converter
+                document.SetFormatConverter(converter);
 
-                //converter.Convert(document.GetContent());
-                Console.WriteLine("Document converted successfully. Press Enter to continue.");
+                // Perform the conversion
+                Document convertedDocument = document.ConvertDocument();
+                documents.Add(convertedDocument);
+
+                Console.WriteLine("Document converted. Press Enter to continue.");
                 Console.ReadLine();
-                return;
             }
         }
+
 
         static void DisplayOwnedDocuments(List<Document> documents)
         {
