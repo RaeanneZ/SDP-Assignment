@@ -31,6 +31,8 @@ namespace SDP_Assignment
 
         public List<User> Collaborators { get; private set; }
 
+        private DocumentVersionHistory versionHistory = new DocumentVersionHistory();
+
         public string Title
         {
             get { return title; }
@@ -108,6 +110,89 @@ namespace SDP_Assignment
             reviseState = new ReviseState(this);
 
             state = draftState;
+        }
+
+        private void AddVersion()
+        {
+            string fullContent = string.Join("\n", content);
+            string fullHeader = string.Join("\n", header);
+            string fullFooter = string.Join("\n", footer);
+
+            versionHistory.AddVersion(new DocumentVersion(fullHeader, fullContent, fullFooter));
+        }
+
+        public void FinishEditing()
+        {
+            //finish editing, add a new version to the version history
+            AddVersion();
+
+            Console.WriteLine("Finished editing. Version has been added to version history.");
+        }
+
+        public void SetHeader(string newHeader, User user)
+        {
+            if (IsOwnerOrCollaborator(user))
+            {
+                header.Add(newHeader);
+                AddVersion();
+                NotifyObservers($"Document '{Title}' header updated by {user.Name}.");
+            }
+            else
+            {
+                Console.WriteLine("Only owner or collaborators can edit.");
+            }
+        }
+
+        public void SetContent(string newContent, User user)
+        {
+            if (IsOwnerOrCollaborator(user))
+            {
+                content.Add(newContent);
+                AddVersion();
+                NotifyObservers($"Document '{Title}' content updated by {user.Name}.");
+            }
+            else
+            {
+                Console.WriteLine("Only owner or collaborators can edit.");
+            }
+        }
+
+        public void SetFooter(string newFooter, User user)
+        {
+            if (IsOwnerOrCollaborator(user))
+            {
+                footer.Add(newFooter);
+                AddVersion();
+                NotifyObservers($"Document '{Title}' footer updated by {user.Name}.");
+            }
+            else
+            {
+                Console.WriteLine("Only owner or collaborators can edit.");
+            }
+        }
+
+        public void ShowVersionHistory()
+        {
+            IDocumentVersionIterator iterator = versionHistory.CreateIterator();
+            Console.WriteLine($"Version History for {Title}:");
+
+            Console.WriteLine("Current Versions:");
+            foreach (var version in versionHistory.GetVersions())
+            {
+                Console.WriteLine($"- Version at {version.Timestamp}");
+            }
+
+            int index = 1;
+            while (iterator.HasNext())
+            {
+                DocumentVersion version = iterator.Next();
+                Console.WriteLine($"{index}. Version at {version.Timestamp}:");
+                Console.WriteLine($"   Header: {version.Header}");
+                Console.WriteLine($"   Content: {version.Content}");
+                Console.WriteLine($"   Footer: {version.Footer}");
+                index++;
+            }
+            Console.WriteLine("0. Back");
         }
 
         // This is for setting and getting the header, content and footer
@@ -311,42 +396,12 @@ namespace SDP_Assignment
             Console.WriteLine();
         }
 
-        // Get and set the content
-        public void SetHeader(string newHeader, User user)
+        public List<DocumentVersion> GetVersions()
         {
-            if (IsOwnerOrCollaborator(user))
-            {
-                header.Add(newHeader);
-            }
-            else
-            {
-                Console.WriteLine("Only owner or collaborators can edit.");
-            }
+
+            return versionHistory.GetVersions();
         }
 
-        public void SetContent(string newContent, User user)
-        {
-            if (IsOwnerOrCollaborator(user))
-            {
-                content.Add(newContent);
-            }
-            else
-            {
-                Console.WriteLine("Only owner or collaborators can edit.");
-            }
-        }
-
-        public void SetFooter(string newFooter, User user)
-        {
-            if (IsOwnerOrCollaborator(user))
-            {
-                footer.Add(newFooter);
-            }
-            else
-            {
-                Console.WriteLine("Only owner or collaborators can edit.");
-            }
-        }
     }
 }
 
