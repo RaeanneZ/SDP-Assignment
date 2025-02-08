@@ -6,6 +6,12 @@ using System.Threading.Tasks;
 
 namespace SDP_Assignment
 {
+    public enum AccessLevel
+    {
+        ReadOnly,
+        ReadWrite
+    }
+
     public abstract class UserComponent : Observer
     {
         private string name;

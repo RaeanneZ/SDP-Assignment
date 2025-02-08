@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Principal;
 using System.Xml.Linq;
 
 namespace SDP_Assignment
@@ -30,8 +31,9 @@ namespace SDP_Assignment
         private Stack<DocumentCommand> redoStack = new Stack<DocumentCommand>();
 
         // Collaborators list now stores UserComponent (User or UserGroup)
-        private List<UserComponent> collaborators = new List<UserComponent>();
-        
+        // Store Collaborators with Access Levels
+        private Dictionary<UserComponent, AccessLevel> collaborators = new Dictionary<UserComponent, AccessLevel>();
+
 
         private DocumentVersionHistory versionHistory = new DocumentVersionHistory();
 
@@ -76,11 +78,6 @@ namespace SDP_Assignment
             get { return reviseState; }
         }
 
-        public DocState getState()
-        {
-            return state;
-        }
-
         public List<string> GetHeader()
         {
             return header;
@@ -94,10 +91,11 @@ namespace SDP_Assignment
             return footer;
         }
 
-        public List<UserComponent> Collaborators
+        public Dictionary<UserComponent, AccessLevel> Collaborators
         {
             get { return collaborators; }
         }
+
         public Document(string title, User owner)
         {
             this.title = title;
@@ -105,8 +103,6 @@ namespace SDP_Assignment
             content = new List<string>();
             header = new List<string>();
             footer = new List<string>();
-
-            collaborators = new List<UserComponent>(); // UPDATED
 
             // Initialize states
             draftState = new DraftState(this);
@@ -120,6 +116,10 @@ namespace SDP_Assignment
         }
 
         // State Pattern
+        public DocState getState()
+        {
+            return state;
+        }
         public void SetState(DocState newState)
         {
             state = newState;
@@ -140,33 +140,38 @@ namespace SDP_Assignment
             Console.WriteLine("Finished editing. Version has been added to version history.");
         }
 
-        public void AddCollaborator(UserComponent userComponent) // UPDATED
+        public void AddCollaborator(UserComponent collaborator, AccessLevel accessLevel)
         {
-            if (IsOwnerOrCollaborator(userComponent)) // UPDATED
+            if (IsOwnerOrCollaborator(collaborator))
             {
-                Console.WriteLine($"{userComponent.Name} is already a collaborator.");
+                Console.WriteLine($"{collaborator.Name} is already a collaborator.");
                 return;
             }
 
-            if (userComponent is User user && approver == user) // Ensures approver is not added
+            if (collaborator is User user && approver == user) // Ensures approver is not added
             {
                 Console.WriteLine("Approver cannot be added as a collaborator!");
                 return;
             }
 
-            ExecuteCommand(new AddCollaboratorCommand(this, userComponent));
-            RegisterObserver(userComponent); // Works for both User and UserGroup
+            collaborators[collaborator] = accessLevel;
+            NotifyObservers($"Collaborator '{collaborator.Name}' added to document '{Title}' with {accessLevel} access.");
+
+
+            ExecuteCommand(new AddCollaboratorCommand(this, collaborator));
+            RegisterObserver(collaborator); // Works for both User and UserGroup
         }
 
-        public void RemoveCollaborator(UserComponent userComponent) // UPDATED
+        public void RemoveCollaborator(UserComponent collaborator) // UPDATED
         {
-            if (!Collaborators.Contains(userComponent))
+            if (!Collaborators.ContainsKey(collaborator))
             {
-                Console.WriteLine($"{userComponent.Name} is not a collaborator.");
+                Console.WriteLine($"{collaborator.Name} is not a collaborator.");
             }
 
-            Collaborators.Remove(userComponent);
-            RemoveObserver(userComponent);
+            Collaborators.Remove(collaborator);
+            NotifyObservers($"Collaborator '{collaborator.Name}' removed from document '{Title}'.");
+            RemoveObserver(collaborator);
         }
 
         public void Edit(List<string> section, User user, string action, string text = "", int lineNumber = -1)
@@ -224,20 +229,39 @@ namespace SDP_Assignment
 
         public void SubmitForApproval(User user)
         {
+            if (user != owner)
+            {
+                Console.WriteLine("Only the owner can submit this document for approval.");
+                return;
+            }
+
             if (approver == null)
             {
                 Console.WriteLine("Please set an approver first!");
                 Console.WriteLine();
                 return;
             }
+
             ExecuteCommand(new SubmitCommand(this, ReviewState));
         }
 
         public void SetApprover(User user)
         {
-            if (collaborators.Contains(user) || user == Owner)
+            if (user == null)
             {
-                Console.WriteLine("Approver cannot be the owner or a collaborator!");
+                Console.WriteLine("Invalid approver.");
+                return;
+            }
+
+            if (owner != user)
+            {
+                Console.WriteLine("Only the document owner can set the approver.");
+                return;
+            }
+
+            if (collaborators.ContainsKey(user))
+            {
+                Console.WriteLine("Approver cannot be a collaborator.");
                 return;
             }
             else
@@ -246,16 +270,41 @@ namespace SDP_Assignment
             }
         }
 
+        public void ViewCollaborators()
+        {
+            Console.WriteLine($"=== Collaborators for Document: {Title} ===");
+            foreach (var entry in collaborators)
+            {
+                Console.WriteLine($"{entry.Key.Name} - {entry.Value}");
+            }
+        }
+
+        public bool HasWriteAccess(UserComponent user)
+        {
+            return collaborators.ContainsKey(user) && collaborators[user] == AccessLevel.ReadWrite;
+        }
+
+        public void EditContent(UserComponent user, string newContent)
+        {
+            if (!HasWriteAccess(user))
+            {
+                Console.WriteLine($"{user.Name} does not have write access.");
+                return;
+            }
+
+            NotifyObservers($"Document '{Title}' content updated by {user.Name}.");
+        }
+
         public bool IsOwnerOrCollaborator(UserComponent userComponent) // UPDATED
         {
             if (userComponent is User user)
             {
-                return owner == user || Collaborators.Contains(user);
+                return owner == user || collaborators.ContainsKey(user);
             }
 
             if (userComponent is UserGroup group)
             {
-                return Collaborators.Contains(group) || group.GetUsers().Exists(member => IsOwnerOrCollaborator(member));
+                return collaborators.ContainsKey(group) || group.GetUsers().Exists(member => IsOwnerOrCollaborator(member));
             }
 
             return false;
@@ -308,7 +357,7 @@ namespace SDP_Assignment
 
         public bool IsAssociatedWithUser(User user)
         {
-            return owner == user || Collaborators.Contains(user) || approver == user;
+            return owner == user || Collaborators.ContainsKey(user) || approver == user;
         }
         
         

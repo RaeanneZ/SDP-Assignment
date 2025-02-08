@@ -165,56 +165,152 @@ namespace SDP_Assignment
             if (groups.ContainsKey(groupName))
             {
                 Console.WriteLine("Group already exists!");
+                Console.WriteLine("Press Enter to continue...");
+                Console.ReadLine();
                 return;
             }
 
             UserGroup newGroup = new UserGroup(groupName);
             groups[groupName] = newGroup;
             Console.WriteLine($"Group '{groupName}' created successfully.");
+            Console.WriteLine("Press Enter to continue...");
+            Console.ReadLine();
         }
 
         static void ManageGroups()
         {
+            printGroups();
+
             Console.Write("Enter group name: ");
             string groupName = Console.ReadLine();
 
             if (!groups.ContainsKey(groupName))
             {
                 Console.WriteLine("Group not found.");
+                Console.WriteLine("Press Enter to continue...");
+                Console.ReadLine();
                 return;
             }
 
             UserGroup group = groups[groupName];
 
-            Console.WriteLine("1. Add Member");
-            Console.WriteLine("2. Remove Member");
-            Console.Write("Enter choice: ");
-            string choice = Console.ReadLine();
-
-            Console.Write("Enter username: ");
-            string username = Console.ReadLine();
-
-            if (!users.ContainsKey(username))
+            while (true)
             {
-                Console.WriteLine("User not found.");
-                return;
+                Console.Clear();
+                Console.WriteLine($"Managing Group: {groupName}");
+                Console.WriteLine("1. Add Member");
+                Console.WriteLine("2. Remove Member");
+                Console.WriteLine("3. View Members");
+                Console.WriteLine("4. Back to Main Menu");
+                Console.Write("Enter choice: ");
+                string choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        Console.Write("Enter username to add: ");
+                        string addUsername = Console.ReadLine();
+                        if (users.ContainsKey(addUsername))
+                        {
+                            group.Add(users[addUsername]);
+                            Console.WriteLine($"User '{addUsername}' added to group '{groupName}'.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("User not found.");
+                        }
+                        Console.WriteLine("Press Enter to continue...");
+                        Console.ReadLine();
+                        break;
+
+                    case "2":
+                        Console.Write("Enter username to remove: ");
+                        string removeUsername = Console.ReadLine();
+                        if (users.ContainsKey(removeUsername))
+                        {
+                            group.Remove(users[removeUsername]);
+                            Console.WriteLine($"User '{removeUsername}' removed from group '{groupName}'.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("User not found.");
+                        }
+                        Console.WriteLine("Press Enter to continue...");
+                        Console.ReadLine();
+                        break;
+
+                    case "3":
+                        Console.WriteLine($"Members of '{groupName}':");
+                        var members = group.GetUsers();
+                        if (members.Count > 0)
+                        {
+                            foreach (var member in members)
+                            {
+                                Console.WriteLine($"- {member.Name}");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("No members in this group.");
+                        }
+                        Console.WriteLine("Press Enter to continue...");
+                        Console.ReadLine();
+                        break;
+
+                    case "4":
+                        return;
+
+                    default:
+                        Console.WriteLine("Invalid choice. Press Enter to try again...");
+                        Console.ReadLine();
+                        break;
+                }
             }
+        }
 
-            User user = users[username];
+        static void ViewDocumentCollaborators(Document document)
+        {
+            Console.Clear();
+            document.ViewCollaborators();
+            Console.WriteLine("\nPress Enter to return...");
+            Console.ReadLine();
+        }
 
-            switch (choice)
+        static void ViewGroups()
+        {
+            Console.Clear();
+            printGroups();
+
+            Console.WriteLine("\nPress Enter to return to the menu...");
+            Console.ReadLine();
+        }
+
+        static void printGroups()
+        {
+            Console.WriteLine("=== List of Groups ===");
+
+            if (groups.Count == 0)
             {
-                case "1":
-                    group.Add(user);
-                    Console.WriteLine("User added to group.");
-                    break;
-                case "2":
-                    group.Remove(user);
-                    Console.WriteLine("User removed from group.");
-                    break;
-                default:
-                    Console.WriteLine("Invalid choice.");
-                    break;
+                Console.WriteLine("No groups have been created.");
+            }
+            else
+            {
+                foreach (var groupEntry in groups)
+                {
+                    string groupName = groupEntry.Key;
+                    UserGroup group = groupEntry.Value;
+                    List<UserComponent> members = group.GetUsers();
+
+                    Console.Write($"{groupName} - ");
+                    if (members.Count > 0)
+                    {
+                        Console.WriteLine(string.Join(", ", members.ConvertAll(m => m.Name)));
+                    }
+                    else
+                    {
+                        Console.WriteLine("No members");
+                    }
+                }
             }
         }
 
@@ -331,10 +427,10 @@ namespace SDP_Assignment
             {
                 Console.WriteLine("1. Edit Document");
                 Console.WriteLine("2. Add Collaborator");
-                Console.WriteLine("3. Set Approver");
-                Console.WriteLine("4. Submit Document");
-                Console.WriteLine("5. Convert Document");
-                Console.WriteLine("6. View Version History");
+                Console.WriteLine("3. View Collaborators");
+                Console.WriteLine("4. Set Approver");
+                Console.WriteLine("5. Submit Document");
+                Console.WriteLine("6. Convert Document");
                 Console.WriteLine("7. Undo");
                 Console.WriteLine("8. Redo");
                 Console.WriteLine("0. Back");
@@ -344,28 +440,19 @@ namespace SDP_Assignment
                 switch (choice)
                 {
                     case "1":
-                        EditDocument(document); 
+                        EditDocument(document);
                         break;
                     case "2":
                         AddCollaborator(document);
                         break;
                     case "3":
-                        SetApprover(document);
+                        ViewDocumentCollaborators(document);
                         break;
                     case "4":
-                        SubmitDocument(document);
+                        SetApprover(document);
                         break;
                     case "5":
-                        ConvertDocument(document);
-                        break;
-                    case "6":
-                        ShowVersionHistoryMenu(document);
-                        break;
-                    case "7":
-                        document.UndoLastCommand();
-                        break;
-                    case "8":
-                        document.RedoLastCommand();
+                        SubmitDocument(document);
                         break;
                     case "0":
                         return;
@@ -598,27 +685,59 @@ namespace SDP_Assignment
 
         static void AddCollaborator(Document document)
         {
+            if (loggedInUser != document.Owner)
+            {
+                Console.WriteLine("Only the document owner can add collaborators.");
+                Console.ReadLine();
+                return;
+            }
+
             Console.Write("Enter collaborator username or group name: ");
             string name = Console.ReadLine();
 
+            UserComponent collaborator;
             if (users.ContainsKey(name))
             {
-                document.AddCollaborator(users[name]); // Add User
+                collaborator = users[name];
             }
             else if (groups.ContainsKey(name))
             {
-                document.AddCollaborator(groups[name]); // Add UserGroup
+                collaborator = groups[name];
             }
             else
             {
                 Console.WriteLine("User or Group not found.");
+                Console.ReadLine();
+                return;
             }
-            Console.WriteLine("Press Enter to continue.");
+
+            Console.WriteLine("Select access level: ");
+            Console.WriteLine("1. Read-Only");
+            Console.WriteLine("2. Read & Write");
+            Console.Write("Enter choice: ");
+            string accessChoice = Console.ReadLine();
+
+            AccessLevel accessLevel = accessChoice switch
+            {
+                "1" => AccessLevel.ReadOnly,
+                "2" => AccessLevel.ReadWrite,
+                _ => AccessLevel.ReadOnly
+            };
+
+            document.AddCollaborator(collaborator, accessLevel);
+            Console.WriteLine($"Added {collaborator.Name} as a collaborator with {accessLevel} access.");
             Console.ReadLine();
         }
 
         static void SetApprover(Document document)
         {
+            if (loggedInUser != document.Owner)
+            {
+                Console.WriteLine("Only the document owner can set an approver.");
+                Console.ReadLine();
+                return;
+            }
+
             Console.Write("Enter approver username: ");
             var username = Console.ReadLine();
 
@@ -637,6 +756,13 @@ namespace SDP_Assignment
 
         static void SubmitDocument(Document document)
         {
+            if (loggedInUser != document.Owner)
+            {
+                Console.WriteLine("Only the document owner can submit the document for approval.");
+                Console.ReadLine();
+                return;
+            }
+
             document.SubmitForApproval(loggedInUser);
             Console.WriteLine("Press Enter to continue.");
             Console.ReadLine();
@@ -712,7 +838,7 @@ namespace SDP_Assignment
             for (int i = 0; i < documents.Count; i++)
             {
                 Document doc = documents[i];
-                if (doc.Owner == loggedInUser || doc.Collaborators.Contains(loggedInUser) || doc.Approver == loggedInUser)
+                if (doc.Owner == loggedInUser || doc.Collaborators.ContainsKey(loggedInUser) || doc.Approver == loggedInUser)
                 {
                     string docType = documents[i].GetType().Name.Replace("Document", "");
                     Console.WriteLine($"{i + 1}. [{docType}] {documents[i].Title} [State: {documents[i].CurrentStateName}]");
