@@ -17,13 +17,15 @@ namespace SDP_Assignment
 
         public void add(User collaborator)
         {
+            doc.NotifyObservers($"{collaborator.Name} has been added as collaborator.");
             doc.Collaborators.Add(collaborator);
+            doc.RegisterObserver(collaborator);
         }
 
         public void submit()
         {
+            doc.NotifyObservers("Document '" + doc.Title + "' has been submitted for approval.");
             doc.SetState(doc.ReviewState);
-            doc.NotifyObservers("Document '" + doc.Title + "' submitted for approval.");
         }
 
         public void setApprover(User collaborator)
@@ -31,10 +33,10 @@ namespace SDP_Assignment
             if (collaborator == null)
             {
                 doc.Approver = null;  
-                Console.WriteLine("Approver has been removed.");
                 return;
             }
 
+            doc.NotifyObservers(collaborator + " has been added as approver.");
             doc.Approver = collaborator;
         }
 
@@ -102,10 +104,6 @@ namespace SDP_Assignment
                     Console.WriteLine("Invalid action.");
                     break;
             }
-
-            doc.NotifyObservers($"Document '{doc.Title}' was edited by {collaborator.Name}.");
         }
-
     }
-
 }

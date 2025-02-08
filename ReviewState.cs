@@ -18,12 +18,9 @@ namespace SDP_Assignment
 
         public void add(User collaborator)
         {
-            if (doc.IsOwnerOrCollaborator(collaborator))
-            {
-                Console.WriteLine("Approver cannot be added as a collaborator!");
-                return;
-            }
+            doc.NotifyObservers($"{collaborator.Name} has been added as collaborator.");
             doc.Collaborators.Add(collaborator);
+            doc.RegisterObserver(collaborator);
         }
 
         public void submit()

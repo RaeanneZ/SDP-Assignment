@@ -17,7 +17,9 @@ namespace SDP_Assignment
 
         public void add(User collaborator)
         {
+            doc.NotifyObservers($"{collaborator.Name} has been added as collaborator.");
             doc.Collaborators.Add(collaborator);
+            doc.RegisterObserver(collaborator);
         }
 
         public void submit()
@@ -103,8 +105,6 @@ namespace SDP_Assignment
                     Console.WriteLine("Invalid action.");
                     break;
             }
-
-            doc.NotifyObservers($"Document '{doc.Title}' was edited by {collaborator.Name}.");
         }
     }
 }

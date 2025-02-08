@@ -22,6 +22,7 @@ namespace SDP_Assignment
         {
             prevState = doc.getState();
             doc.getState().submit();
+            doc.NotifyObservers($"Document '" + doc.Title + "' was submitted for approval.");
         }
 
         public void Undo()

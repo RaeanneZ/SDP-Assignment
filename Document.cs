@@ -109,6 +109,7 @@ namespace SDP_Assignment
             rejectedState = new RejectedState(this);
             reviseState = new ReviseState(this);
 
+            RegisterObserver(owner);
             state = draftState;
         }
 
@@ -135,7 +136,6 @@ namespace SDP_Assignment
             {
                 header.Add(newHeader);
                 AddVersion();
-                NotifyObservers($"Document '{Title}' header updated by {user.Name}.");
             }
             else
             {
@@ -149,7 +149,6 @@ namespace SDP_Assignment
             {
                 content.Add(newContent);
                 AddVersion();
-                NotifyObservers($"Document '{Title}' content updated by {user.Name}.");
             }
             else
             {
@@ -163,7 +162,6 @@ namespace SDP_Assignment
             {
                 footer.Add(newFooter);
                 AddVersion();
-                NotifyObservers($"Document '{Title}' footer updated by {user.Name}.");
             }
             else
             {
@@ -237,7 +235,6 @@ namespace SDP_Assignment
                 Console.WriteLine();
                 return;
             }
-
             ExecuteCommand(new SubmitCommand(this, ReviewState));
         }
 
@@ -295,29 +292,14 @@ namespace SDP_Assignment
 
         public void Approve()
         {
-            if (approver == null)
-            {
-                Console.WriteLine("No approver assigned.");
-                return;
-            }
-            if (state != reviewState)
-            {
-                Console.WriteLine("Document must be under review to be approved.");
-                return;
-            }
             state.approve();
         }
 
         public void Reject(string reason)
         {
-            if (approver == null)
-            {
-                Console.WriteLine("No approver assigned.");
-                return;
-            }
             if (state != reviewState)
             {
-                Console.WriteLine("Document must be under review to be rejected.");
+                Console.WriteLine($"Document '{Title}'  must be under review to be rejected.");
                 return;
             }
             state.reject(reason);
@@ -325,14 +307,12 @@ namespace SDP_Assignment
 
         public void PushBack(string comment)
         {
-            if (state == reviewState)
+            if (state != reviewState)
             {
-                state.pushBack(comment);
+                Console.WriteLine("Document must be under review to be push back.");
+                return;
             }
-            else
-            {
-                Console.WriteLine("Document must be in review state to be pushed back.");
-            }
+            state.pushBack(comment);
         }
 
         public void ConvertDocument()

@@ -18,17 +18,18 @@ namespace SDP_Assignment
         public void Execute()
         {
             doc.getState().add(this.user);
-            doc.NotifyObservers($"{user.Name} has been added as collaborator.");
         }
 
         public void Undo()
         {
-            doc.Collaborators.Remove(this.user);
             doc.NotifyObservers($"{user.Name} has been removed as collaborator.");
+            doc.RemoveObserver(this.user);
+            doc.Collaborators.Remove(this.user);
         }
 
         public void Redo()
         {
+            doc.NotifyObservers($"{user.Name} has been added as collaborator.");
             Execute();
         }
     }
