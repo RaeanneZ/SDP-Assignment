@@ -349,7 +349,7 @@ namespace SDP_Assignment
 
             Console.WriteLine("Press Enter to return to the menu.");
             Console.ReadLine();
-        }
+        
 
             while (true)
             {
