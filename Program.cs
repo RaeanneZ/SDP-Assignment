@@ -627,29 +627,6 @@ namespace SDP_Assignment
             Console.ReadLine();
         }
 
-        static void AddCollaborator(Document document)
-        {
-            if (document.Owner != loggedInUser)
-            {
-                Console.WriteLine("Only owner can add collaborator! Press enter to continue.");
-                Console.ReadLine();
-                return;
-            }
-            Console.Write("Enter collaborator username: ");
-            var username = Console.ReadLine();
-
-            if (users.ContainsKey(username))
-            {
-                document.AddCollaborator(users[username]);
-                Console.WriteLine("Press Enter to continue.");
-            }
-            else
-            {
-                Console.WriteLine("User not found. Press Enter to try again.");
-            }
-            Console.ReadLine();
-        }
-
         static void SubmitDocument(Document document)
         {
             document.SubmitForApproval(loggedInUser);

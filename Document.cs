@@ -147,9 +147,6 @@ namespace SDP_Assignment
             {
                 Console.WriteLine($"{userComponent.Name} is already a collaborator.");
                 return;
-                
-                header.Add(newHeader);
-                AddVersion();
             }
 
             if (userComponent is User user && approver == user) // Ensures approver is not added
@@ -167,13 +164,7 @@ namespace SDP_Assignment
         {
             if (!Collaborators.Contains(userComponent))
             {
-                content.Add(newContent);
-                AddVersion();
-            }
-            else
-            {
                 Console.WriteLine($"{userComponent.Name} is not a collaborator.");
-                return;
             }
 
             Collaborators.Remove(userComponent);
@@ -186,30 +177,12 @@ namespace SDP_Assignment
             if (IsOwnerOrCollaborator(user))
             {
                 ExecuteCommand(new EditDocumentCommand(this, section, user, action, text, lineNumber));
-                footer.Add(newFooter);
                 AddVersion();
             }
             else
             {
                 Console.WriteLine("Only owner or collaborators can edit.");
             }
-        }
-
-        public void SubmitForApproval(User user)
-        {
-            if (approver == null)
-            {
-                Console.WriteLine("No approver assigned. Assign an approver before submitting.");
-                return;
-            }
-
-            if (state == reviewState || state == reviseState)
-            {
-                Console.WriteLine("Document is already under review or being revised.");
-                return;
-            }
-
-            state.submit();
         }
 
         public void SetHeader(string newHeader, User user)
@@ -266,9 +239,26 @@ namespace SDP_Assignment
             ExecuteCommand(new SubmitCommand(this, ReviewState));
         }
 
+        //public void SubmitForApproval(User user)
+        //{
+        //    if (approver == null)
+        //    {
+        //        Console.WriteLine("No approver assigned. Assign an approver before submitting.");
+        //        return;
+        //    }
+
+        //    if (state == reviewState || state == reviseState)
+        //    {
+        //        Console.WriteLine("Document is already under review or being revised.");
+        //        return;
+        //    }
+
+        //    state.submit();
+        //}
+
         public void SetApprover(User user)
         {
-            approver = user
+            approver = user;
         }
 
         public bool IsOwnerOrCollaborator(UserComponent userComponent) // UPDATED
