@@ -27,9 +27,11 @@ namespace SDP_Assignment
 
         // Commands
         private Stack<DocumentCommand> commandHistory = new Stack<DocumentCommand>();
-        private Stack<DocumentCommand> redoStack = new Stack<DocumentCommand>(); 
+        private Stack<DocumentCommand> redoStack = new Stack<DocumentCommand>();
 
-        public List<User> Collaborators { get; private set; }
+        // Collaborators list now stores UserComponent (User or UserGroup)
+        private List<UserComponent> collaborators = new List<UserComponent>();
+        
 
         private DocumentVersionHistory versionHistory = new DocumentVersionHistory();
 
@@ -92,6 +94,10 @@ namespace SDP_Assignment
             return footer;
         }
 
+        public List<UserComponent> Collaborators
+        {
+            get { return collaborators; }
+        }
         public Document(string title, User owner)
         {
             this.title = title;
@@ -100,7 +106,7 @@ namespace SDP_Assignment
             header = new List<string>();
             footer = new List<string>();
 
-            Collaborators = new List<User>();
+            collaborators = new List<UserComponent>(); // UPDATED
 
             // Initialize states
             draftState = new DraftState(this);
@@ -123,10 +129,40 @@ namespace SDP_Assignment
 
         public void FinishEditing()
         {
-            //finish editing, add a new version to the version history
             AddVersion();
-
             Console.WriteLine("Finished editing. Version has been added to version history.");
+        }
+
+        public void AddCollaborator(UserComponent userComponent) // UPDATED
+        {
+            if (IsOwnerOrCollaborator(userComponent)) // UPDATED
+            {
+                Console.WriteLine($"{userComponent.Name} is already a collaborator.");
+                return;
+            }
+
+            if (userComponent is User user && approver == user) // Ensures approver is not added
+            {
+                Console.WriteLine("Approver cannot be added as a collaborator!");
+                return;
+            }
+
+            Collaborators.Add(userComponent);
+            RegisterObserver(userComponent); // Works for both User and UserGroup
+            NotifyObservers($"Collaborator '{userComponent.Name}' added to document '{Title}'.");
+        }
+
+        public void RemoveCollaborator(UserComponent userComponent) // UPDATED
+        {
+            if (!Collaborators.Contains(userComponent))
+            {
+                Console.WriteLine($"{userComponent.Name} is not a collaborator.");
+                return;
+            }
+
+            Collaborators.Remove(userComponent);
+            RemoveObserver(userComponent);
+            NotifyObservers($"Collaborator '{userComponent.Name}' removed from document '{Title}'.");
         }
 
         public void SetHeader(string newHeader, User user)
@@ -171,126 +207,19 @@ namespace SDP_Assignment
             }
         }
 
-        public void ShowVersionHistory()
+        public bool IsOwnerOrCollaborator(UserComponent userComponent) // UPDATED
         {
-            IDocumentVersionIterator iterator = versionHistory.CreateIterator();
-            Console.WriteLine($"Version History for {Title}:");
-
-            Console.WriteLine("Current Versions:");
-            foreach (var version in versionHistory.GetVersions())
+            if (userComponent is User user)
             {
-                Console.WriteLine($"- Version at {version.Timestamp}");
+                return owner == user || Collaborators.Contains(user);
             }
 
-            int index = 1;
-            while (iterator.HasNext())
+            if (userComponent is UserGroup group)
             {
-                DocumentVersion version = iterator.Next();
-                Console.WriteLine($"{index}. Version at {version.Timestamp}:");
-                Console.WriteLine($"   Header: {version.Header}");
-                Console.WriteLine($"   Content: {version.Content}");
-                Console.WriteLine($"   Footer: {version.Footer}");
-                index++;
-            }
-            Console.WriteLine("0. Back");
-        }
-
-        // This is for setting and getting the header, content and footer
-        public void AddCollaborator(User user)
-        {
-            if (IsOwnerOrCollaborator(user))
-            {
-                Console.WriteLine("User is already a collaborator.");
-                Console.WriteLine();
-                return;
-            }
-            
-            if (approver == user) 
-            {
-                Console.WriteLine("Approver cannot be added as collaborator!");
-                Console.WriteLine();
-                return;
+                return Collaborators.Contains(group) || group.GetUsers().Exists(member => IsOwnerOrCollaborator(member));
             }
 
-            ExecuteCommand(new AddCollaboratorCommand(this, user));
-            RegisterObserver(user);
-            return;
-        }
-
-        public void Edit(List<string> section, User user, string action, string text = "", int lineNumber = -1)
-        {
-            if (IsOwnerOrCollaborator(user))
-            {
-                ExecuteCommand(new EditDocumentCommand(this, section, user, action, text, lineNumber));
-            }
-            else
-            {
-                Console.WriteLine("Only owner or collaborators can edit.");
-            }
-        }
-
-        public void SubmitForApproval(User user)
-        {
-            if (approver == null)
-            {
-                Console.WriteLine("Please set an approver first!");
-                Console.WriteLine();
-                return;
-            }
-
-            ExecuteCommand(new SubmitCommand(this, ReviewState));
-        }
-
-        public void SetApprover(User user)
-        {
-            if (state == reviewState || state == reviseState)
-            {
-                Console.WriteLine("Error: New approver cannot be set at this time.");
-                Console.WriteLine();
-                return;
-            }
-
-            if (IsOwnerOrCollaborator(user))
-            {
-                Console.WriteLine("Error: Approver cannot be the owner or a collaborator.");
-                Console.WriteLine();
-                return;
-            }
-
-            ExecuteCommand(new SetApproverCommand(this, user));
-            RegisterObserver(user);
-        }
-
-        public void SetState(DocState newState)
-        {
-            this.state = newState;
-            NotifyObservers("Document '" + Title + "' state changed to: " + newState.GetType().Name);
-        }
-
-        public void RegisterObserver(Observer observer)
-        {
-            if (!observers.Contains(observer))
-            {
-                observers.Add(observer);
-            }
-        }
-
-        public void RemoveObserver(Observer observer)
-        {
-            observers.Remove(observer);
-        }
-
-        public void NotifyObservers(string message)
-        {
-            foreach (Observer observer in observers)
-            {
-                observer.Notify(message);
-            }
-        }
-
-        public bool IsOwnerOrCollaborator(User user)
-        {
-            return owner == user || Collaborators.Contains(user);
+            return false;
         }
 
         public void Approve()
@@ -359,7 +288,31 @@ namespace SDP_Assignment
         {
             return owner == user || Collaborators.Contains(user) || approver == user;
         }
+        
+        
+        // Observer Pattern -------------------------------------------------------------------------------------------
+        public void RegisterObserver(Observer observer) // UPDATED
+        {
+            if (!observers.Contains(observer))
+            {
+                observers.Add(observer);
+            }
+        }
 
+        public void RemoveObserver(Observer observer) // UPDATED
+        {
+            observers.Remove(observer);
+        }
+
+        public void NotifyObservers(string message) // UPDATED
+        {
+            foreach (UserComponent observer in observers)
+            {
+                observer.Notify(message); // Works for both User and UserGroup
+            }
+        }
+
+        // Command Pattern --------------------------------------------------------------------------------------------
         public void ExecuteCommand(DocumentCommand command)
         {
             command.Execute();
@@ -398,12 +351,7 @@ namespace SDP_Assignment
 
         public List<DocumentVersion> GetVersions()
         {
-
             return versionHistory.GetVersions();
         }
-
     }
 }
-
-
-

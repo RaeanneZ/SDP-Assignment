@@ -1,12 +1,12 @@
 using System;
-using System.Reflection.Metadata;
-using System.Reflection.PortableExecutable;
+using System.Collections.Generic;
 
 namespace SDP_Assignment
 {
     class Program
     {
-        static Dictionary<string, User> users = new Dictionary<string, User>();
+        static Dictionary<string, User> users = new Dictionary<string, User>(); // Stores individual users
+        static Dictionary<string, UserGroup> groups = new Dictionary<string, UserGroup>(); // Stores user groups
         static List<Document> documents = new List<Document>();
         static User loggedInUser;
 
@@ -93,7 +93,9 @@ namespace SDP_Assignment
                 Console.WriteLine("==== User Menu ====");
                 Console.WriteLine("1. Create Document");
                 Console.WriteLine("2. View Documents");
-                Console.WriteLine("3. Logout");
+                Console.WriteLine("3. Create Group");
+                Console.WriteLine("4. Manage Groups");
+                Console.WriteLine("5. Logout");
                 Console.Write("Choose an option: ");
 
                 var choice = Console.ReadLine();
@@ -107,6 +109,12 @@ namespace SDP_Assignment
                         ViewDocuments();
                         break;
                     case "3":
+                        CreateGroup();
+                        break;
+                    case "4":
+                        ManageGroups();
+                        break;
+                    case "5":
                         Console.WriteLine("Logging out. Press Enter to continue.");
                         Console.ReadLine();
                         return;
@@ -143,10 +151,71 @@ namespace SDP_Assignment
 
             Console.Write("Enter the document title: ");
             var title = Console.ReadLine();
-            var document = factory.CreateDocument(title, loggedInUser); // Ensure loggedInUser is not null
+            var document = factory.CreateDocument(title, loggedInUser);
             documents.Add(document);
             Console.WriteLine("Document created successfully. Press Enter to return to the menu.");
             Console.ReadLine();
+        }
+
+        static void CreateGroup()
+        {
+            Console.Write("Enter group name: ");
+            string groupName = Console.ReadLine();
+
+            if (groups.ContainsKey(groupName))
+            {
+                Console.WriteLine("Group already exists!");
+                return;
+            }
+
+            UserGroup newGroup = new UserGroup(groupName);
+            groups[groupName] = newGroup;
+            Console.WriteLine($"Group '{groupName}' created successfully.");
+        }
+
+        static void ManageGroups()
+        {
+            Console.Write("Enter group name: ");
+            string groupName = Console.ReadLine();
+
+            if (!groups.ContainsKey(groupName))
+            {
+                Console.WriteLine("Group not found.");
+                return;
+            }
+
+            UserGroup group = groups[groupName];
+
+            Console.WriteLine("1. Add Member");
+            Console.WriteLine("2. Remove Member");
+            Console.Write("Enter choice: ");
+            string choice = Console.ReadLine();
+
+            Console.Write("Enter username: ");
+            string username = Console.ReadLine();
+
+            if (!users.ContainsKey(username))
+            {
+                Console.WriteLine("User not found.");
+                return;
+            }
+
+            User user = users[username];
+
+            switch (choice)
+            {
+                case "1":
+                    group.Add(user);
+                    Console.WriteLine("User added to group.");
+                    break;
+                case "2":
+                    group.Remove(user);
+                    Console.WriteLine("User removed from group.");
+                    break;
+                default:
+                    Console.WriteLine("Invalid choice.");
+                    break;
+            }
         }
 
         static void ViewDocuments()
@@ -168,9 +237,8 @@ namespace SDP_Assignment
                 for (int i = 0; i < documents.Count; i++)
                 {
                     Document doc = documents[i];
-                    string docType = documents[i].GetType().Name.Replace("Document", ""); // extracts "Technical Report" or "Grant Proposal"
+                    string docType = documents[i].GetType().Name.Replace("Document", "");
                     Console.WriteLine($"{i + 1}. [{docType}] {documents[i].Title} [State: {documents[i].CurrentStateName}]");
-
                 }
 
                 Console.WriteLine("0. Back to Main Menu");
@@ -184,17 +252,8 @@ namespace SDP_Assignment
                     if (choice > 0 && choice <= documents.Count)
                     {
                         Document selectedDocument = documents[choice - 1];
-                        if (selectedDocument.Approver == loggedInUser)
-                        {
-                            ApproverActions(selectedDocument);
-                            return;
-                        }
-                        else
-                        {
-                            Console.WriteLine($"- {selectedDocument.Title} [State: {selectedDocument.CurrentStateName}]");
-                            DocumentActions(selectedDocument);
-                            return;
-                        }
+                        DocumentActions(selectedDocument);
+                        return;
                     }
                     else
                     {
@@ -210,42 +269,6 @@ namespace SDP_Assignment
             }
         }
 
-        static void ApproverActions(Document document)
-        {
-            Console.Clear();
-            DisplayDocument(document);
-
-            Console.WriteLine("Select action: ");
-            Console.WriteLine("1. Approve");
-            Console.WriteLine("2. Push back");
-            Console.WriteLine("3. Reject");
-            Console.WriteLine("4. Cancel");
-            Console.Write("Enter choice: ");
-            var x = Console.ReadLine();
-
-            switch (x)
-            {
-                case "1":
-                    document.Approve();
-                    break;
-                case "2":
-                    Console.Write("Enter a comment to push back with: ");
-                    string comment = Console.ReadLine();
-                    document.PushBack(comment);
-                    break;
-                case "3":
-                    Console.WriteLine("Enter reason for rejection: ");
-                    string reason = Console.ReadLine();
-                    document.Reject(reason);
-                    break;
-                case "4":
-                    return;
-                default:
-                    Console.WriteLine("Invalid choice.");
-                    break;
-            }
-        }
-
         static void DocumentActions(Document document)
         {
             Console.Clear();
@@ -255,14 +278,10 @@ namespace SDP_Assignment
 
             while (true)
             {
-                Console.WriteLine("1. Edit Document");
-                Console.WriteLine("2. Add Collaborator");
-                Console.WriteLine("3. Set Approver");
-                Console.WriteLine("4. Submit Document");
-                Console.WriteLine("5. Convert Document");
-                Console.WriteLine("6. View Version History");
-                Console.WriteLine("7. Undo");
-                Console.WriteLine("8. Redo");
+                Console.WriteLine("1. Add Collaborator");
+                Console.WriteLine("2. Submit Document");
+                Console.WriteLine("3. Undo");
+                Console.WriteLine("4. Redo");
                 Console.WriteLine("0. Back");
                 Console.Write("Choose an action: ");
 
@@ -270,27 +289,15 @@ namespace SDP_Assignment
                 switch (choice)
                 {
                     case "1":
-                        EditDocument(document);
-                        break;
-                    case "2":
                         AddCollaborator(document);
                         break;
+                    case "2":
+                        document.SubmitForApproval(loggedInUser);
+                        break;
                     case "3":
-                        SetApprover(document);
-                        break;
-                    case "4":
-                        SubmitDocument(document);
-                        break;
-                    case "5":
-                        ConvertDocument(document);
-                        break;
-                    case "6":
-                        ShowVersionHistoryMenu(document);
-                        break;
-                    case "7":
                         document.UndoLastCommand();
                         break;
-                    case "8":
+                    case "4":
                         document.RedoLastCommand();
                         break;
                     case "0":
@@ -302,309 +309,25 @@ namespace SDP_Assignment
             }
         }
 
-        static void EditDocument(Document document)
+        static void AddCollaborator(Document document)
         {
-            if (document.getState() == document.ReviewState)
+            Console.Write("Enter collaborator username or group name: ");
+            string name = Console.ReadLine();
+
+            if (users.ContainsKey(name))
             {
-                Console.WriteLine("Document cannot be edited while in review state!");
-                Console.WriteLine();
-                return;
+                document.AddCollaborator(users[name]); // Add User
             }
-            if (document.getState() == document.ApprovedState)
+            else if (groups.ContainsKey(name))
             {
-                Console.WriteLine("Document cannot be edited after being approved!");
-                Console.WriteLine();
-                return;
+                document.AddCollaborator(groups[name]); // Add UserGroup
             }
-            Console.Clear();
-            DisplayDocument(document);
-
-
-            Console.WriteLine("Which part would you like to edit?");
-            Console.WriteLine("1. Header");
-            Console.WriteLine("2. Content");
-            Console.WriteLine("3. Footer");
-            Console.WriteLine("4. Cancel");
-            Console.Write("Enter choice: ");
-
-            var choice = Console.ReadLine();
-
-            List<string> header = document.GetHeader();
-            List<string> content = document.GetContent();
-            List<string> footer = document.GetFooter();
-
-            switch (choice)
+            else
             {
-                case "1":
-                    DisplayEditMenu(document, header, loggedInUser);
-                    break;
-                case "2":
-                    DisplayEditMenu(document, content, loggedInUser);
-                    break;
-                case "3":
-                    DisplayEditMenu(document, footer, loggedInUser);
-                    break;
-                case "4":
-                    Console.WriteLine();
-                    return;
-                default:
-                    Console.WriteLine("Invalid choice.");
-                    break;
+                Console.WriteLine("User or Group not found.");
             }
-
             Console.WriteLine("Press Enter to continue.");
             Console.ReadLine();
         }
-
-        static void ShowVersionHistoryMenu(Document document)
-        {
-            Console.Clear();
-            Console.WriteLine($"==== Version History: {document.Title} ====");
-
-            var versions = document.GetVersions();
-            if (versions.Count == 0)
-            {
-                Console.WriteLine("No versions available.");
-                Console.WriteLine("Press Enter to return.");
-                Console.ReadLine();
-                return;
-            }
-
-            while (true)
-            {
-                Console.Clear();
-                Console.WriteLine($"Document: {document.Title}");
-                Console.WriteLine("Select a version to view:");
-
-                for (int i = 0; i < versions.Count; i++)
-                {
-                    Console.WriteLine($"{i + 1}. Version at {versions[i].Timestamp}");
-                }
-                Console.WriteLine("0. Back");
-
-                Console.Write("Enter your choice: ");
-                if (int.TryParse(Console.ReadLine(), out int choice))
-                {
-                    if (choice == 0)
-                        return;
-
-                    if (choice > 0 && choice <= versions.Count)
-                    {
-                        var version = versions[choice - 1];
-                        Console.Clear();
-                        Console.WriteLine($"==== Viewing Version: {version.Timestamp} ====");
-                        Console.WriteLine("Header:");
-                        foreach (var line in version.Header) Console.WriteLine(line);
-                        Console.WriteLine("\nContent:");
-                        foreach (var line in version.Content) Console.WriteLine(line);
-                        Console.WriteLine("\nFooter:");
-                        foreach (var line in version.Footer) Console.WriteLine(line);
-                        Console.WriteLine("\nPress Enter to go back.");
-                        Console.ReadLine();
-                    }
-                    else
-                    {
-                        Console.WriteLine("Invalid choice. Press Enter to try again.");
-                        Console.ReadLine();
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Invalid input. Press Enter to try again.");
-                    Console.ReadLine();
-                }
-            }
-
-        }
-
-        static void DisplayDocument(Document document)
-        {
-            Console.WriteLine($"Title: {document.Title}");
-            Console.WriteLine("--------------------------------------------------");
-            Console.WriteLine("Header:");
-            
-            foreach (string i in document.GetHeader())
-            {
-                Console.WriteLine(i);
-            }
-                
-            Console.WriteLine("--------------------------------------------------"); 
-            Console.WriteLine("Content:");
-                
-            foreach (string i in document.GetContent())
-            {
-                Console.WriteLine(i);
-            }
-               
-            Console.WriteLine("--------------------------------------------------"); 
-            Console.WriteLine("Footer:");
-                
-            foreach (string i in document.GetFooter())    
-            {     
-                Console.WriteLine(i); 
-            }
-                
-            Console.WriteLine("--------------------------------------------------");
-        }
-
-        static void DisplayEditMenu(Document document, List<string> section, User user)
-        {
-            while (true)
-            {
-                Console.WriteLine("\nChoose an edit option:");
-                Console.WriteLine("1. Add a new line");
-                Console.WriteLine("2. Delete a line");
-                Console.WriteLine("3. Replace a line");
-                Console.WriteLine("4. Finish editing");
-
-                Console.Write("Enter your choice: ");
-                string choice = Console.ReadLine();
-
-                Console.WriteLine();
-
-                switch (choice)
-                {
-                    case "1":
-                        Console.Write("Enter text to add: ");
-                        string newText = Console.ReadLine();
-                        document.Edit(section, user, "add", newText);
-                        break;
-
-                    case "2":
-                        Console.WriteLine();
-                            Console.WriteLine("Current content:");
-                            for (int i = 0; i < section.Count; i++)
-                            {
-                                Console.WriteLine($"{i}: {section[i]}");
-                            }
-
-                            Console.Write("Enter the line number to delete: ");
-                            if (int.TryParse(Console.ReadLine(), out int deleteIndex) && deleteIndex >= 0 && deleteIndex < section.Count)
-                            {
-                                document.Edit(section, user, "remove", lineNumber: deleteIndex);
-                            }
-                            else
-                            {
-                                Console.WriteLine("Invalid line number.");
-                            }
-                            break;
-
-                        case "3":
-                            Console.WriteLine();
-                            Console.WriteLine("Current content:");
-                            for (int i = 0; i < section.Count; i++)
-                            {
-                                Console.WriteLine($"{i}: {section[i]}");
-                            }
-
-                            Console.Write("Enter the line number to replace: ");
-                            if (int.TryParse(Console.ReadLine(), out int replaceIndex) && replaceIndex >= 0 && replaceIndex < section.Count)
-                            {
-                                Console.Write("Enter new text: ");
-                                string replaceText = Console.ReadLine();
-                                document.Edit(section, user, "replace", replaceText, replaceIndex);
-                            }
-                            else
-                            {
-                                Console.WriteLine("Invalid line number.");
-                            }
-                            break;
-
-                        case "4":
-                            Console.WriteLine("Editing complete.");
-                            document.FinishEditing();
-                            return;
-
-                        default:
-                            Console.WriteLine("Invalid choice. Please select again.");
-                            break;
-                    }
-                }
-            }
-
-            static void AddCollaborator(Document document)
-            {
-                Console.Write("Enter collaborator username: ");
-                var username = Console.ReadLine();
-
-                if (users.ContainsKey(username))
-                {
-                    document.AddCollaborator(users[username]);
-                    Console.WriteLine("Press Enter to continue.");
-                }
-                else
-                {
-                    Console.WriteLine("User not found. Press Enter to try again.");
-                }
-                Console.ReadLine();
-            }
-
-            static void SetApprover(Document document)
-            {
-                Console.Write("Enter approver username: ");
-                var username = Console.ReadLine();
-
-                if (!users.ContainsKey(username))
-                {
-                    Console.WriteLine("User not found. Please enter a valid username.");
-                    Console.ReadLine();
-                    return;
-                }
-
-                var user = users[username];
-                document.SetApprover(user);
-                Console.WriteLine("Press Enter to continue.");
-                Console.ReadLine();
-            }
-
-            static void SubmitDocument(Document document)
-            {
-                document.SubmitForApproval(loggedInUser);
-                Console.WriteLine("Press Enter to continue.");
-                Console.ReadLine();
-            }
-
-            static void ConvertDocument(Document document)
-            {
-                while (true)
-                {
-                    Console.Clear();
-                    Console.WriteLine($"==== Convert Document: {document.Title} ====");
-                    Console.WriteLine("Choose format to convert:");
-                    Console.WriteLine("1. PDF");
-                    Console.WriteLine("2. Word");
-                    Console.WriteLine("3. Cancel");
-                    Console.Write("Enter choice: ");
-
-                    var choice = Console.ReadLine();
-
-                    if (choice == "3" || string.IsNullOrWhiteSpace(choice))
-                    {
-                        Console.WriteLine("Conversion canceled. Press Enter to return.");
-                        Console.ReadLine();
-                        return;
-                    }
-
-                    IFormatConverter converter = choice switch
-                    {
-                        "1" => new PDFConverter(),
-                        "2" => new WordConverter(),
-                        _ => null
-                    };
-
-                    if (converter == null)
-                    {
-                        Console.WriteLine("Invalid choice. Press Enter to try again.");
-                        Console.ReadLine();
-                        continue;
-                    }
-
-                    //converter.Convert(document.GetContent());
-                    Console.WriteLine("Document converted successfully. Press Enter to continue.");
-                    Console.ReadLine();
-                    return;
-                }
-            }
-       
     }
 }
