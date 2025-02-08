@@ -848,20 +848,49 @@ namespace SDP_Assignment
         {
             int x = 0;
             Console.WriteLine("=== Your documents ===");
-            for (int i = 0; i < documents.Count; i++)
+
+            foreach (var doc in documents)
             {
-                Document doc = documents[i];
-                if (doc.Owner == loggedInUser || doc.Collaborators.Contains(loggedInUser) || doc.Approver == loggedInUser)
+                // Check if the user is the owner, approver, or a direct collaborator
+                if (doc.Owner == loggedInUser || doc.Approver == loggedInUser)
                 {
-                    string docType = documents[i].GetType().Name.Replace("Document", "");
-                    Console.WriteLine($"{i + 1}. [{docType}] {documents[i].Title} [State: {documents[i].CurrentStateName}]");
-                    x++;
-                }
-                if (x == 0)
-                {
-                    Console.WriteLine("No documents accessible!");
+                    string docType = doc.GetType().Name.Replace("Document", "");
+                    Console.WriteLine($"{++x}. [{docType}] {doc.Title} [State: {doc.CurrentStateName}]");
+                    continue;
                 }
 
+                // Check if the logged-in user is part of a group stored in collaborators
+                bool isGroupMember = false;
+
+                foreach (var collaborator in doc.Collaborators)
+                {
+                    if (collaborator is UserGroup group)
+                    {
+                        // Check if the user is part of the group
+                        if (group.GetUsers().Contains(loggedInUser))
+                        {
+                            isGroupMember = true;
+                            break;
+                        }
+                    }
+                    else if (collaborator == loggedInUser)
+                    {
+                        // Check if the user is directly in the collaborators list
+                        isGroupMember = true;
+                        break;
+                    }
+                }
+
+                if (isGroupMember)
+                {
+                    string docType = doc.GetType().Name.Replace("Document", "");
+                    Console.WriteLine($"{++x}. [{docType}] {doc.Title} [State: {doc.CurrentStateName}]");
+                }
+            }
+
+            if (x == 0)
+            {
+                Console.WriteLine("No documents accessible!");
             }
         }
     }

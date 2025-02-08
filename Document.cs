@@ -162,16 +162,16 @@ namespace SDP_Assignment
                 collaborators.Add(group);
                 RegisterObserver(group);
 
-                // Do not add duplicate names if already in the collaborator list
-                foreach (var member in group.GetUsers())
-                {
-                    if (!collaborators.Contains(member))
-                    {
-                        collaborators.Add(member);
-                        RegisterObserver(member);
-                        NotifyObservers($"Collaborator '{member.Name}' from group '{group.Name}' added to document '{Title}'.");
-                    }
-                }
+                //// Do not add duplicate names if already in the collaborator list
+                //foreach (var member in group.GetUsers())
+                //{
+                //    if (!collaborators.Contains(member))
+                //    {
+                //        collaborators.Add(member);
+                //        RegisterObserver(member);
+                //        NotifyObservers($"Collaborator '{member.Name}' from group '{group.Name}' added to document '{Title}'.");
+                //    }
+                //}
             }
             else
             {
