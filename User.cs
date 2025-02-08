@@ -1,17 +1,14 @@
-﻿using System;
+﻿using SDP_Assignment;
+using System;
 
-public class User : Observer
-{
-    private string name;
-
-    public string Name { get; private set; }
-
+public class User : UserComponent
+{ 
     public User(string name)
     {
-        this.name = name;
+        Name = name;
     }
 
-    public virtual void Notify(string message)
+    public override void Notify(string message)
     {
         Console.WriteLine($"Notification for {Name}: {message}");
     }

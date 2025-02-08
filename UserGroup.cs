@@ -1,0 +1,42 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace SDP_Assignment
+{
+    class UserGroup : UserComponent
+    {
+        private List<UserComponent> members = new List<UserComponent>();
+
+        public UserGroup(string groupName)
+        {
+            Name = groupName;
+        }
+
+        public override void Add(UserComponent user)
+        {
+            members.Add(user);
+        }
+
+        public override void Remove(UserComponent user)
+        {
+            members.Remove(user);
+        }
+
+        public override List<UserComponent> GetUsers()
+        {
+            return members;
+        }
+
+        public override void Notify(string message)
+        {
+            Console.WriteLine($"[Group: {Name}] Notification: {message}");
+            foreach (var member in members)
+            {
+                member.Notify(message);
+            }
+        }
+    }
+}
