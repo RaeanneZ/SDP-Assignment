@@ -9,27 +9,28 @@ namespace SDP_Assignment
     public class AddCollaboratorCommand : DocumentCommand
     {
         private Document doc;
-        private User user;
-        public AddCollaboratorCommand(Document doc, User user) {
+        private UserComponent collaborator;
+
+        public AddCollaboratorCommand(Document doc, UserComponent collaborator) {
             this.doc = doc;
-            this.user = user;   
+            this.collaborator = collaborator;   
         }
 
         public void Execute()
         {
-            doc.getState().add(this.user);
+            doc.AddCollaborator(collaborator);
+            doc.NotifyObservers($"{collaborator.Name} has been added as collaborator.");
         }
 
         public void Undo()
         {
-            doc.NotifyObservers($"{user.Name} has been removed as collaborator.");
-            doc.RemoveObserver(this.user);
-            doc.Collaborators.Remove(this.user);
+            doc.RemoveCollaborator(collaborator);
+            doc.NotifyObservers($"{collaborator.Name} has been removed as collaborator.");
         }
 
         public void Redo()
         {
-            doc.NotifyObservers($"{user.Name} has been added as collaborator.");
+            doc.NotifyObservers($"{collaborator.Name} has been added as collaborator.");
             Execute();
         }
     }
