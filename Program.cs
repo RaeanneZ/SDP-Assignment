@@ -171,15 +171,6 @@ namespace SDP_Assignment
                     string docType = documents[i].GetType().Name.Replace("Document", ""); // extracts "Technical Report" or "Grant Proposal"
                     Console.WriteLine($"{i + 1}. [{docType}] {documents[i].Title} [State: {documents[i].CurrentStateName}]");
 
-                    if (doc.Approver == loggedInUser)
-                    {
-                        ApproverActions(doc);
-                    }
-                    else
-                    {
-                        Console.WriteLine($"- {doc.Title} [State: {doc.CurrentStateName}]");
-                        DocumentActions(doc);
-                    }
                 }
 
                 Console.WriteLine("0. Back to Main Menu");
@@ -193,7 +184,17 @@ namespace SDP_Assignment
                     if (choice > 0 && choice <= documents.Count)
                     {
                         Document selectedDocument = documents[choice - 1];
-                        DocumentActions(selectedDocument);
+                        if (selectedDocument.Approver == loggedInUser)
+                        {
+                            ApproverActions(selectedDocument);
+                            return;
+                        }
+                        else
+                        {
+                            Console.WriteLine($"- {selectedDocument.Title} [State: {selectedDocument.CurrentStateName}]");
+                            DocumentActions(selectedDocument);
+                            return;
+                        }
                     }
                     else
                     {
@@ -211,6 +212,7 @@ namespace SDP_Assignment
 
         static void ApproverActions(Document document)
         {
+            Console.Clear();
             DisplayDocument(document);
 
             Console.WriteLine("Select action: ");
@@ -219,9 +221,9 @@ namespace SDP_Assignment
             Console.WriteLine("3. Reject");
             Console.WriteLine("4. Cancel");
             Console.Write("Enter choice: ");
-            var choice = Console.ReadLine();
+            var x = Console.ReadLine();
 
-            switch (choice)
+            switch (x)
             {
                 case "1":
                     document.Approve();
@@ -259,7 +261,9 @@ namespace SDP_Assignment
                 Console.WriteLine("4. Submit Document");
                 Console.WriteLine("5. Convert Document");
                 Console.WriteLine("6. View Version History");
-                Console.WriteLine("7. Back");
+                Console.WriteLine("7. Undo");
+                Console.WriteLine("8. Redo");
+                Console.WriteLine("0. Back");
                 Console.Write("Choose an action: ");
 
                 var choice = Console.ReadLine();
@@ -284,6 +288,12 @@ namespace SDP_Assignment
                         ShowVersionHistoryMenu(document);
                         break;
                     case "7":
+                        document.UndoLastCommand();
+                        break;
+                    case "8":
+                        document.RedoLastCommand();
+                        break;
+                    case "0":
                         return;
                     default:
                         Console.WriteLine("Invalid choice. Try again.");
@@ -307,9 +317,6 @@ namespace SDP_Assignment
                 return;
             }
             Console.Clear();
-            Console.WriteLine("==== Editing Document ====");
-            Console.WriteLine($"Title: {document.Title}");
-            Console.WriteLine("--------------------------------------------------");
             DisplayDocument(document);
 
 
@@ -348,7 +355,6 @@ namespace SDP_Assignment
             Console.WriteLine("Press Enter to continue.");
             Console.ReadLine();
         }
-
 
         static void ShowVersionHistoryMenu(Document document)
         {
@@ -462,7 +468,6 @@ namespace SDP_Assignment
                         Console.Write("Enter text to add: ");
                         string newText = Console.ReadLine();
                         document.Edit(section, user, "add", newText);
-                        Console.WriteLine("Line added.");
                         break;
 
                     case "2":
@@ -477,7 +482,6 @@ namespace SDP_Assignment
                             if (int.TryParse(Console.ReadLine(), out int deleteIndex) && deleteIndex >= 0 && deleteIndex < section.Count)
                             {
                                 document.Edit(section, user, "remove", lineNumber: deleteIndex);
-                                //Console.WriteLine("Line deleted.");
                             }
                             else
                             {
@@ -499,7 +503,6 @@ namespace SDP_Assignment
                                 Console.Write("Enter new text: ");
                                 string replaceText = Console.ReadLine();
                                 document.Edit(section, user, "replace", replaceText, replaceIndex);
-                                Console.WriteLine("Line replaced.");
                             }
                             else
                             {
