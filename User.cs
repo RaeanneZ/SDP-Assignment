@@ -4,7 +4,9 @@ public class User : Observer
 {
     private string name;
 
-    public string Name { get; private set; }
+    public string Name { 
+        get { return name; } 
+    }
 
     public User(string name)
     {

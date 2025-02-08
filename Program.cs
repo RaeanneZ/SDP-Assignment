@@ -167,7 +167,7 @@ namespace SDP_Assignment
 
                 for (int i = 0; i < documents.Count; i++)
                 {
-
+                    Document doc = documents[i];
                     string docType = documents[i].GetType().Name.Replace("Document", ""); // extracts "Technical Report" or "Grant Proposal"
                     Console.WriteLine($"{i + 1}. [{docType}] {documents[i].Title} [State: {documents[i].CurrentStateName}]");
 
@@ -409,27 +409,35 @@ namespace SDP_Assignment
                 }
             }
 
+        }
+
         static void DisplayDocument(Document document)
         {
             Console.WriteLine($"Title: {document.Title}");
             Console.WriteLine("--------------------------------------------------");
             Console.WriteLine("Header:");
+            
             foreach (string i in document.GetHeader())
             {
                 Console.WriteLine(i);
             }
-            Console.WriteLine("--------------------------------------------------");
+                
+            Console.WriteLine("--------------------------------------------------"); 
             Console.WriteLine("Content:");
+                
             foreach (string i in document.GetContent())
             {
                 Console.WriteLine(i);
             }
-            Console.WriteLine("--------------------------------------------------");
+               
+            Console.WriteLine("--------------------------------------------------"); 
             Console.WriteLine("Footer:");
-            foreach (string i in document.GetFooter())
-            {
-                Console.WriteLine(i);
+                
+            foreach (string i in document.GetFooter())    
+            {     
+                Console.WriteLine(i); 
             }
+                
             Console.WriteLine("--------------------------------------------------");
         }
 
@@ -459,140 +467,141 @@ namespace SDP_Assignment
 
                     case "2":
                         Console.WriteLine();
-                        Console.WriteLine("Current content:");
-                        for (int i = 0; i < section.Count; i++)
-                        {
-                            Console.WriteLine($"{i}: {section[i]}");
-                        }
+                            Console.WriteLine("Current content:");
+                            for (int i = 0; i < section.Count; i++)
+                            {
+                                Console.WriteLine($"{i}: {section[i]}");
+                            }
 
-                        Console.Write("Enter the line number to delete: ");
-                        if (int.TryParse(Console.ReadLine(), out int deleteIndex) && deleteIndex >= 0 && deleteIndex < section.Count)
-                        {
-                            document.Edit(section, user, "remove", lineNumber: deleteIndex);
-                            Console.WriteLine("Line deleted.");
-                        }
-                        else
-                        {
-                            Console.WriteLine("Invalid line number.");
-                        }
-                        break;
+                            Console.Write("Enter the line number to delete: ");
+                            if (int.TryParse(Console.ReadLine(), out int deleteIndex) && deleteIndex >= 0 && deleteIndex < section.Count)
+                            {
+                                document.Edit(section, user, "remove", lineNumber: deleteIndex);
+                                //Console.WriteLine("Line deleted.");
+                            }
+                            else
+                            {
+                                Console.WriteLine("Invalid line number.");
+                            }
+                            break;
 
-                    case "3":
-                        Console.WriteLine();
-                        Console.WriteLine("Current content:");
-                        for (int i = 0; i < section.Count; i++)
-                        {
-                            Console.WriteLine($"{i}: {section[i]}");
-                        }
+                        case "3":
+                            Console.WriteLine();
+                            Console.WriteLine("Current content:");
+                            for (int i = 0; i < section.Count; i++)
+                            {
+                                Console.WriteLine($"{i}: {section[i]}");
+                            }
 
-                        Console.Write("Enter the line number to replace: ");
-                        if (int.TryParse(Console.ReadLine(), out int replaceIndex) && replaceIndex >= 0 && replaceIndex < section.Count)
-                        {
-                            Console.Write("Enter new text: ");
-                            string replaceText = Console.ReadLine();
-                            document.Edit(section, user, "replace", replaceText, replaceIndex);
-                            Console.WriteLine("Line replaced.");
-                        }
-                        else
-                        {
-                            Console.WriteLine("Invalid line number.");
-                        }
-                        break;
+                            Console.Write("Enter the line number to replace: ");
+                            if (int.TryParse(Console.ReadLine(), out int replaceIndex) && replaceIndex >= 0 && replaceIndex < section.Count)
+                            {
+                                Console.Write("Enter new text: ");
+                                string replaceText = Console.ReadLine();
+                                document.Edit(section, user, "replace", replaceText, replaceIndex);
+                                Console.WriteLine("Line replaced.");
+                            }
+                            else
+                            {
+                                Console.WriteLine("Invalid line number.");
+                            }
+                            break;
 
-                    case "4":
-                        Console.WriteLine("Editing complete.");
-                        document.FinishEditing();
-                        return;
+                        case "4":
+                            Console.WriteLine("Editing complete.");
+                            document.FinishEditing();
+                            return;
 
-                    default:
-                        Console.WriteLine("Invalid choice. Please select again.");
-                        break;
+                        default:
+                            Console.WriteLine("Invalid choice. Please select again.");
+                            break;
+                    }
                 }
             }
-        }
 
-        static void AddCollaborator(Document document)
-        {
-            Console.Write("Enter collaborator username: ");
-            var username = Console.ReadLine();
-
-            if (users.ContainsKey(username))
+            static void AddCollaborator(Document document)
             {
-                document.AddCollaborator(users[username]);
-                Console.WriteLine("Press Enter to continue.");
-            }
-            else
-            {
-                Console.WriteLine("User not found. Press Enter to try again.");
-            }
-            Console.ReadLine();
-        }
+                Console.Write("Enter collaborator username: ");
+                var username = Console.ReadLine();
 
-        static void SetApprover(Document document)
-        {
-            Console.Write("Enter approver username: ");
-            var username = Console.ReadLine();
-
-            if (!users.ContainsKey(username))
-            {
-                Console.WriteLine("User not found. Please enter a valid username.");
-                Console.ReadLine();
-                return;
-            }
-
-            var user = users[username];
-            document.SetApprover(user);
-            Console.WriteLine("Press Enter to continue.");
-            Console.ReadLine();
-        }
-
-        static void SubmitDocument(Document document)
-        {
-            document.SubmitForApproval(loggedInUser);
-            Console.WriteLine("Press Enter to continue.");
-            Console.ReadLine();
-        }
-
-        static void ConvertDocument(Document document)
-        {
-            while (true)
-            {
-                Console.Clear();
-                Console.WriteLine($"==== Convert Document: {document.Title} ====");
-                Console.WriteLine("Choose format to convert:");
-                Console.WriteLine("1. PDF");
-                Console.WriteLine("2. Word");
-                Console.WriteLine("3. Cancel");
-                Console.Write("Enter choice: ");
-
-                var choice = Console.ReadLine();
-
-                if (choice == "3" || string.IsNullOrWhiteSpace(choice))
+                if (users.ContainsKey(username))
                 {
-                    Console.WriteLine("Conversion canceled. Press Enter to return.");
+                    document.AddCollaborator(users[username]);
+                    Console.WriteLine("Press Enter to continue.");
+                }
+                else
+                {
+                    Console.WriteLine("User not found. Press Enter to try again.");
+                }
+                Console.ReadLine();
+            }
+
+            static void SetApprover(Document document)
+            {
+                Console.Write("Enter approver username: ");
+                var username = Console.ReadLine();
+
+                if (!users.ContainsKey(username))
+                {
+                    Console.WriteLine("User not found. Please enter a valid username.");
                     Console.ReadLine();
                     return;
                 }
 
-                IFormatConverter converter = choice switch
-                {
-                    "1" => new PDFConverter(),
-                    "2" => new WordConverter(),
-                    _ => null
-                };
-
-                if (converter == null)
-                {
-                    Console.WriteLine("Invalid choice. Press Enter to try again.");
-                    Console.ReadLine();
-                    continue;
-                }
-
-                //converter.Convert(document.GetContent());
-                Console.WriteLine("Document converted successfully. Press Enter to continue.");
+                var user = users[username];
+                document.SetApprover(user);
+                Console.WriteLine("Press Enter to continue.");
                 Console.ReadLine();
-                return;
             }
-        }
+
+            static void SubmitDocument(Document document)
+            {
+                document.SubmitForApproval(loggedInUser);
+                Console.WriteLine("Press Enter to continue.");
+                Console.ReadLine();
+            }
+
+            static void ConvertDocument(Document document)
+            {
+                while (true)
+                {
+                    Console.Clear();
+                    Console.WriteLine($"==== Convert Document: {document.Title} ====");
+                    Console.WriteLine("Choose format to convert:");
+                    Console.WriteLine("1. PDF");
+                    Console.WriteLine("2. Word");
+                    Console.WriteLine("3. Cancel");
+                    Console.Write("Enter choice: ");
+
+                    var choice = Console.ReadLine();
+
+                    if (choice == "3" || string.IsNullOrWhiteSpace(choice))
+                    {
+                        Console.WriteLine("Conversion canceled. Press Enter to return.");
+                        Console.ReadLine();
+                        return;
+                    }
+
+                    IFormatConverter converter = choice switch
+                    {
+                        "1" => new PDFConverter(),
+                        "2" => new WordConverter(),
+                        _ => null
+                    };
+
+                    if (converter == null)
+                    {
+                        Console.WriteLine("Invalid choice. Press Enter to try again.");
+                        Console.ReadLine();
+                        continue;
+                    }
+
+                    //converter.Convert(document.GetContent());
+                    Console.WriteLine("Document converted successfully. Press Enter to continue.");
+                    Console.ReadLine();
+                    return;
+                }
+            }
+       
     }
 }
