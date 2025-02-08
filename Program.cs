@@ -530,6 +530,12 @@ namespace SDP_Assignment
 
         static void AddCollaborator(Document document)
         {
+            if (document.Owner != loggedInUser)
+            {
+                Console.WriteLine("Only owner can add collaborator! Press enter to continue.");
+                Console.ReadLine();
+                return;
+            }
             Console.Write("Enter collaborator username: ");
             var username = Console.ReadLine();
 
