@@ -24,7 +24,7 @@ namespace SDP_Assignment
 
         public void Undo()
         {
-            doc.removeCollaborator(collaborator);
+            doc.RemoveCollaborator(collaborator);
             doc.NotifyObservers($"{collaborator.Name} has been removed as collaborator.");
         }
 

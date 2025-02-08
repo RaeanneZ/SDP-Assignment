@@ -278,10 +278,14 @@ namespace SDP_Assignment
 
             while (true)
             {
-                Console.WriteLine("1. Add Collaborator");
-                Console.WriteLine("2. Submit Document");
-                Console.WriteLine("3. Undo");
-                Console.WriteLine("4. Redo");
+                Console.WriteLine("1. Edit Document");
+                Console.WriteLine("2. Add Collaborator");
+                Console.WriteLine("3. Set Approver");
+                Console.WriteLine("4. Submit Document");
+                Console.WriteLine("5. Convert Document");
+                Console.WriteLine("6. View Version History");
+                Console.WriteLine("7. Undo");
+                Console.WriteLine("8. Redo");
                 Console.WriteLine("0. Back");
                 Console.Write("Choose an action: ");
 
@@ -289,21 +293,253 @@ namespace SDP_Assignment
                 switch (choice)
                 {
                     case "1":
-                        AddCollaborator(document);
+                        EditDocument(document); 
                         break;
                     case "2":
-                        document.SubmitForApproval(loggedInUser);
+                        AddCollaborator(document);
                         break;
                     case "3":
-                        document.UndoLastCommand();
+                        SetApprover(document);
                         break;
                     case "4":
+                        document.SubmitForApproval(loggedInUser);
+                        break;
+                    case "5":
+                        document.ConvertDocument();
+                        break;
+                    case "6":
+                        ShowVersionHistoryMenu(document);
+                        break;
+                    case "7":
+                        document.UndoLastCommand();
+                        break;
+                    case "8":
                         document.RedoLastCommand();
                         break;
                     case "0":
                         return;
                     default:
                         Console.WriteLine("Invalid choice. Try again.");
+                        break;
+                }
+            }
+        }
+
+        static void EditDocument(Document document)
+        {
+            if (document.getState() == document.ReviewState)
+            {
+                Console.WriteLine("Document cannot be edited while in review state!");
+                Console.WriteLine();
+                return;
+            }
+            if (document.getState() == document.ApprovedState)
+            {
+                Console.WriteLine("Document cannot be edited after being approved!");
+                Console.WriteLine();
+                return;
+            }
+            Console.Clear();
+            DisplayDocument(document);
+
+
+            Console.WriteLine("Which part would you like to edit?");
+            Console.WriteLine("1. Header");
+            Console.WriteLine("2. Content");
+            Console.WriteLine("3. Footer");
+            Console.WriteLine("4. Cancel");
+            Console.Write("Enter choice: ");
+
+            var choice = Console.ReadLine();
+
+            List<string> header = document.GetHeader();
+            List<string> content = document.GetContent();
+            List<string> footer = document.GetFooter();
+
+            switch (choice)
+            {
+                case "1":
+                    DisplayEditMenu(document, header, loggedInUser);
+                    break;
+                case "2":
+                    DisplayEditMenu(document, content, loggedInUser);
+                    break;
+                case "3":
+                    DisplayEditMenu(document, footer, loggedInUser);
+                    break;
+                case "4":
+                    Console.WriteLine();
+                    return;
+                default:
+                    Console.WriteLine("Invalid choice.");
+                    break;
+            }
+
+            Console.WriteLine("Press Enter to continue.");
+            Console.ReadLine();
+        }
+
+        static void DisplayDocument(Document document)
+        {
+            Console.WriteLine($"Title: {document.Title}");
+            Console.WriteLine("--------------------------------------------------");
+            Console.WriteLine("Header:");
+
+            foreach (string i in document.GetHeader())
+            {
+                Console.WriteLine(i);
+            }
+
+            Console.WriteLine("--------------------------------------------------");
+            Console.WriteLine("Content:");
+
+            foreach (string i in document.GetContent())
+            {
+                Console.WriteLine(i);
+            }
+
+            Console.WriteLine("--------------------------------------------------");
+            Console.WriteLine("Footer:");
+
+            foreach (string i in document.GetFooter())
+            {
+                Console.WriteLine(i);
+            }
+
+            Console.WriteLine("--------------------------------------------------");
+        }
+
+        static void ShowVersionHistoryMenu(Document document)
+        {
+            Console.Clear();
+            Console.WriteLine($"==== Version History: {document.Title} ====");
+
+            var versions = document.GetVersions();
+            if (versions.Count == 0)
+            {
+                Console.WriteLine("No versions available.");
+                Console.WriteLine("Press Enter to return.");
+                Console.ReadLine();
+                return;
+            }
+
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine($"Document: {document.Title}");
+                Console.WriteLine("Select a version to view:");
+
+                for (int i = 0; i < versions.Count; i++)
+                {
+                    Console.WriteLine($"{i + 1}. Version at {versions[i].Timestamp}");
+                }
+                Console.WriteLine("0. Back");
+
+                Console.Write("Enter your choice: ");
+                if (int.TryParse(Console.ReadLine(), out int choice))
+                {
+                    if (choice == 0)
+                        return;
+
+                    if (choice > 0 && choice <= versions.Count)
+                    {
+                        var version = versions[choice - 1];
+                        Console.Clear();
+                        Console.WriteLine($"==== Viewing Version: {version.Timestamp} ====");
+                        Console.WriteLine("Header:");
+                        foreach (var line in version.Header) Console.WriteLine(line);
+                        Console.WriteLine("\nContent:");
+                        foreach (var line in version.Content) Console.WriteLine(line);
+                        Console.WriteLine("\nFooter:");
+                        foreach (var line in version.Footer) Console.WriteLine(line);
+                        Console.WriteLine("\nPress Enter to go back.");
+                        Console.ReadLine();
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid choice. Press Enter to try again.");
+                        Console.ReadLine();
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Invalid input. Press Enter to try again.");
+                    Console.ReadLine();
+                }
+            }
+
+        }
+
+        static void DisplayEditMenu(Document document, List<string> section, User user)
+        {
+            while (true)
+            {
+                Console.WriteLine("\nChoose an edit option:");
+                Console.WriteLine("1. Add a new line");
+                Console.WriteLine("2. Delete a line");
+                Console.WriteLine("3. Replace a line");
+                Console.WriteLine("4. Finish editing");
+
+                Console.Write("Enter your choice: ");
+                string choice = Console.ReadLine();
+
+                Console.WriteLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        Console.Write("Enter text to add: ");
+                        string newText = Console.ReadLine();
+                        document.Edit(section, user, "add", newText);
+                        break;
+
+                    case "2":
+                        Console.WriteLine();
+                        Console.WriteLine("Current content:");
+                        for (int i = 0; i < section.Count; i++)
+                        {
+                            Console.WriteLine($"{i}: {section[i]}");
+                        }
+
+                        Console.Write("Enter the line number to delete: ");
+                        if (int.TryParse(Console.ReadLine(), out int deleteIndex) && deleteIndex >= 0 && deleteIndex < section.Count)
+                        {
+                            document.Edit(section, user, "remove", lineNumber: deleteIndex);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Invalid line number.");
+                        }
+                        break;
+
+                    case "3":
+                        Console.WriteLine();
+                        Console.WriteLine("Current content:");
+                        for (int i = 0; i < section.Count; i++)
+                        {
+                            Console.WriteLine($"{i}: {section[i]}");
+                        }
+
+                        Console.Write("Enter the line number to replace: ");
+                        if (int.TryParse(Console.ReadLine(), out int replaceIndex) && replaceIndex >= 0 && replaceIndex < section.Count)
+                        {
+                            Console.Write("Enter new text: ");
+                            string replaceText = Console.ReadLine();
+                            document.Edit(section, user, "replace", replaceText, replaceIndex);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Invalid line number.");
+                        }
+                        break;
+
+                    case "4":
+                        Console.WriteLine("Editing complete.");
+                        document.FinishEditing();
+                        return;
+
+                    default:
+                        Console.WriteLine("Invalid choice. Please select again.");
                         break;
                 }
             }
@@ -326,6 +562,24 @@ namespace SDP_Assignment
             {
                 Console.WriteLine("User or Group not found.");
             }
+            Console.WriteLine("Press Enter to continue.");
+            Console.ReadLine();
+        }
+
+        static void SetApprover(Document document)
+        {
+            Console.Write("Enter approver username: ");
+            var username = Console.ReadLine();
+
+            if (!users.ContainsKey(username))
+            {
+                Console.WriteLine("User not found. Please enter a valid username.");
+                Console.ReadLine();
+                return;
+            }
+
+            var user = users[username];
+            document.Approver = user;
             Console.WriteLine("Press Enter to continue.");
             Console.ReadLine();
         }

@@ -118,6 +118,13 @@ namespace SDP_Assignment
             state = draftState;
         }
 
+        // State Pattern
+        public void SetState(DocState newState)
+        {
+            state = newState;
+            NotifyObservers($"Document '{Title}' state changed to: {state.GetType().Name}.");
+        }
+
         private void AddVersion()
         {
             string fullContent = string.Join("\n", content);
@@ -163,6 +170,35 @@ namespace SDP_Assignment
             Collaborators.Remove(userComponent);
             RemoveObserver(userComponent);
             NotifyObservers($"Collaborator '{userComponent.Name}' removed from document '{Title}'.");
+        }
+
+        public void Edit(List<string> section, User user, string action, string text = "", int lineNumber = -1)
+        {
+            if (IsOwnerOrCollaborator(user))
+            {
+                ExecuteCommand(new EditDocumentCommand(this, section, user, action, text, lineNumber));
+            }
+            else
+            {
+                Console.WriteLine("Only owner or collaborators can edit.");
+            }
+        }
+
+        public void SubmitForApproval(User user)
+        {
+            if (approver == null)
+            {
+                Console.WriteLine("No approver assigned. Assign an approver before submitting.");
+                return;
+            }
+
+            if (state == reviewState || state == reviseState)
+            {
+                Console.WriteLine("Document is already under review or being revised.");
+                return;
+            }
+
+            state.submit();
         }
 
         public void SetHeader(string newHeader, User user)
