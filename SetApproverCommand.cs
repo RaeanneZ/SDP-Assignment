@@ -39,7 +39,6 @@ namespace SDP_Assignment
 
         public void Redo()
         {
-            doc.NotifyObservers($"Approver set to {this.newApprover.Name}");
             Execute();
         }
     }

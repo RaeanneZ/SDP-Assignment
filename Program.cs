@@ -221,26 +221,28 @@ namespace SDP_Assignment
         static void ViewDocuments()
         {
             Console.Clear();
-            if (documents.Count == 0)
+            Console.WriteLine("=== View Documents ===");
+            Console.WriteLine("1. List all documents owned by you");
+            Console.WriteLine("2. List all documents accessible to you");
+            Console.Write("Select Option: ");
+            string decision = Console.ReadLine();
+            Console.WriteLine();
+
+            switch (decision)
             {
-                Console.WriteLine("No documents available.");
-                Console.WriteLine("Press Enter to return to the menu.");
-                Console.ReadLine();
-                return;
+                case "1":
+                    DisplayOwnedDocuments(documents);
+                    break;
+                case "2":
+                    DisplayAccessibleDocuments(documents);
+                    break;
+                default:
+                    break;
+
             }
 
             while (true)
             {
-                Console.Clear();
-                Console.WriteLine("==== Your Documents ====");
-
-                for (int i = 0; i < documents.Count; i++)
-                {
-                    Document doc = documents[i];
-                    string docType = documents[i].GetType().Name.Replace("Document", "");
-                    Console.WriteLine($"{i + 1}. [{docType}] {documents[i].Title} [State: {documents[i].CurrentStateName}]");
-                }
-
                 Console.WriteLine("0. Back to Main Menu");
                 Console.Write("Select a document (Enter number): ");
 
@@ -252,7 +254,14 @@ namespace SDP_Assignment
                     if (choice > 0 && choice <= documents.Count)
                     {
                         Document selectedDocument = documents[choice - 1];
-                        DocumentActions(selectedDocument);
+                        if (selectedDocument.Approver == loggedInUser)
+                        {
+                            ApproverActions(selectedDocument);
+                        }
+                        else
+                        {
+                            DocumentActions(selectedDocument);
+                        }
                         return;
                     }
                     else
@@ -311,7 +320,6 @@ namespace SDP_Assignment
             }
         }
 
-
         static void DocumentActions(Document document)
         {
             Console.Clear();
@@ -345,10 +353,10 @@ namespace SDP_Assignment
                         SetApprover(document);
                         break;
                     case "4":
-                        document.SubmitForApproval(loggedInUser);
+                        SubmitDocument(document);
                         break;
                     case "5":
-                        document.ConvertDocument();
+                        ConvertDocument(document);
                         break;
                     case "6":
                         ShowVersionHistoryMenu(document);
@@ -622,7 +630,7 @@ namespace SDP_Assignment
             }
 
             var user = users[username];
-            document.Approver = user;
+            document.SetApprover(user);
             Console.WriteLine("Press Enter to continue.");
             Console.ReadLine();
         }
@@ -673,6 +681,48 @@ namespace SDP_Assignment
                 Console.WriteLine("Document converted successfully. Press Enter to continue.");
                 Console.ReadLine();
                 return;
+            }
+        }
+
+        static void DisplayOwnedDocuments(List<Document> documents)
+        {
+            int x = 0;
+            Console.WriteLine("=== Your documents ===");
+            for (int i = 0; i < documents.Count; i++)
+            {
+                Document doc = documents[i];
+                if (doc.Owner == loggedInUser)
+                {
+                    string docType = documents[i].GetType().Name.Replace("Document", "");
+                    Console.WriteLine($"{i + 1}. [{docType}] {documents[i].Title} [State: {documents[i].CurrentStateName}]");
+                    x++;
+                }
+                if (x == 0)
+                {
+                    Console.WriteLine("No documents owned!");
+                }
+
+            }
+        }
+
+        static void DisplayAccessibleDocuments(List<Document> documents)
+        {
+            int x = 0;
+            Console.WriteLine("=== Your documents ===");
+            for (int i = 0; i < documents.Count; i++)
+            {
+                Document doc = documents[i];
+                if (doc.Owner == loggedInUser || doc.Collaborators.Contains(loggedInUser) || doc.Approver == loggedInUser)
+                {
+                    string docType = documents[i].GetType().Name.Replace("Document", "");
+                    Console.WriteLine($"{i + 1}. [{docType}] {documents[i].Title} [State: {documents[i].CurrentStateName}]");
+                    x++;
+                }
+                if (x == 0)
+                {
+                    Console.WriteLine("No documents accessible!");
+                }
+
             }
         }
     }

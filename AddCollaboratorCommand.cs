@@ -18,8 +18,7 @@ namespace SDP_Assignment
 
         public void Execute()
         {
-            doc.AddCollaborator(collaborator);
-            doc.NotifyObservers($"{collaborator.Name} has been added as collaborator.");
+            doc.getState().add(collaborator);
         }
 
         public void Undo()
@@ -30,7 +29,6 @@ namespace SDP_Assignment
 
         public void Redo()
         {
-            doc.NotifyObservers($"{collaborator.Name} has been added as collaborator.");
             Execute();
         }
     }

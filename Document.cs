@@ -123,7 +123,6 @@ namespace SDP_Assignment
         public void SetState(DocState newState)
         {
             state = newState;
-            NotifyObservers($"Document '{Title}' state changed to: {state.GetType().Name}.");
         }
 
         private void AddVersion()
@@ -155,9 +154,8 @@ namespace SDP_Assignment
                 return;
             }
 
-            Collaborators.Add(userComponent);
+            ExecuteCommand(new AddCollaboratorCommand(this, userComponent));
             RegisterObserver(userComponent); // Works for both User and UserGroup
-            NotifyObservers($"Collaborator '{userComponent.Name}' added to document '{Title}'.");
         }
 
         public void RemoveCollaborator(UserComponent userComponent) // UPDATED
@@ -169,7 +167,6 @@ namespace SDP_Assignment
 
             Collaborators.Remove(userComponent);
             RemoveObserver(userComponent);
-            NotifyObservers($"Collaborator '{userComponent.Name}' removed from document '{Title}'.");
         }
 
         public void Edit(List<string> section, User user, string action, string text = "", int lineNumber = -1)
@@ -191,7 +188,6 @@ namespace SDP_Assignment
             {
                 header.Add(newHeader);
                 AddVersion();
-                NotifyObservers($"Document '{Title}' header updated by {user.Name}.");
             }
             else
             {
@@ -205,7 +201,6 @@ namespace SDP_Assignment
             {
                 content.Add(newContent);
                 AddVersion();
-                NotifyObservers($"Document '{Title}' content updated by {user.Name}.");
             }
             else
             {
@@ -216,16 +211,15 @@ namespace SDP_Assignment
 
         public void SetFooter(string newFooter, User user)
         {
-          if (IsOwnerOrCollaborator(user))
-          {
-            footer.Add(newFooter);
-            AddVersion();
-            NotifyObservers($"Document '{Title}' footer updated by {user.Name}.");
-          }
-          else
-          {
-            Console.WriteLine("Only owner or collaborators can edit.");
-          }
+            if (IsOwnerOrCollaborator(user))
+            {
+                footer.Add(newFooter);
+                AddVersion();
+            }
+            else
+            {
+                Console.WriteLine("Only owner or collaborators can edit.");
+            }
         }
 
         public void SubmitForApproval(User user)
@@ -239,26 +233,17 @@ namespace SDP_Assignment
             ExecuteCommand(new SubmitCommand(this, ReviewState));
         }
 
-        //public void SubmitForApproval(User user)
-        //{
-        //    if (approver == null)
-        //    {
-        //        Console.WriteLine("No approver assigned. Assign an approver before submitting.");
-        //        return;
-        //    }
-
-        //    if (state == reviewState || state == reviseState)
-        //    {
-        //        Console.WriteLine("Document is already under review or being revised.");
-        //        return;
-        //    }
-
-        //    state.submit();
-        //}
-
         public void SetApprover(User user)
         {
-            approver = user;
+            if (collaborators.Contains(user) || user == Owner)
+            {
+                Console.WriteLine("Approver cannot be the owner or a collaborator!");
+                return;
+            }
+            else
+            {
+                ExecuteCommand(new SetApproverCommand(this, user));
+            }
         }
 
         public bool IsOwnerOrCollaborator(UserComponent userComponent) // UPDATED

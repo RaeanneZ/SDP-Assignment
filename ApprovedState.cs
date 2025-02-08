@@ -15,7 +15,7 @@ namespace SDP_Assignment
             doc = document;
         }
 
-        public void add(User collaborator)
+        public void add(UserComponent collaborator)
         {
             Console.WriteLine("Cannot add collaborators to an approved document.");
         }

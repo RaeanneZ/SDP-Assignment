@@ -16,7 +16,7 @@ namespace SDP_Assignment
             doc = document;
         }
 
-        public void add(User collaborator)
+        public void add(UserComponent collaborator)
         {
             doc.NotifyObservers($"{collaborator.Name} has been added as collaborator.");
             doc.Collaborators.Add(collaborator);
@@ -36,12 +36,7 @@ namespace SDP_Assignment
 
         public void setApprover(User collaborator)
         {
-            if (doc.IsOwnerOrCollaborator(collaborator))
-            {
-                Console.WriteLine("Error: Approver cannot be the owner or a collaborator.");
-                return;
-            }
-
+            doc.NotifyObservers(collaborator + " has been added as approver.");
             doc.Approver = collaborator;
             doc.RegisterObserver(collaborator);
         }
