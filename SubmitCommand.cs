@@ -10,12 +10,10 @@ namespace SDP_Assignment
     {
         private Document doc;
         private DocState prevState;
-        private DocState newState;
 
-        public SubmitCommand(Document doc, DocState newState)
+        public SubmitCommand(Document doc)
         {
             this.doc = doc;
-            this.newState = newState;
         }
 
         public void Execute()

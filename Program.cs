@@ -482,10 +482,10 @@ namespace SDP_Assignment
                         ShowVersionHistoryMenu(document);
                         break;
                     case "8":
-                        document.UndoLastCommand();
+                        loggedInUser.UndoLastCommand(document);
                         break;
                     case "9":
-                        document.RedoLastCommand();
+                        loggedInUser.RedoLastCommand(document);
                         break;
                     case "0":
                         return;
@@ -661,7 +661,8 @@ namespace SDP_Assignment
                     case "1":
                         Console.Write("Enter text to add: ");
                         string newText = Console.ReadLine();
-                        document.Edit(section, user, "add", newText);
+                        DocumentCommand addCommand = new EditDocumentCommand(document,section,user,"add",newText);
+                        user.ExecuteCommand(document, addCommand);
                         break;
 
                     case "2":
@@ -675,7 +676,8 @@ namespace SDP_Assignment
                         Console.Write("Enter the line number to delete: ");
                         if (int.TryParse(Console.ReadLine(), out int deleteIndex) && deleteIndex >= 0 && deleteIndex < section.Count)
                         {
-                            document.Edit(section, user, "remove", lineNumber: deleteIndex);
+                            DocumentCommand deleteCommand = new EditDocumentCommand(document, section, user, "remove", lineNumber:deleteIndex);
+                            user.ExecuteCommand(document, deleteCommand);
                         }
                         else
                         {
@@ -696,7 +698,8 @@ namespace SDP_Assignment
                         {
                             Console.Write("Enter new text: ");
                             string replaceText = Console.ReadLine();
-                            document.Edit(section, user, "replace", replaceText, replaceIndex);
+                            DocumentCommand replaceCommand = new EditDocumentCommand(document, section, user, "replace", replaceText, replaceIndex);
+                            user.ExecuteCommand(document, replaceCommand);
                         }
                         else
                         {
@@ -744,7 +747,8 @@ namespace SDP_Assignment
                 return;
             }
 
-            document.AddCollaborator(collaborator);
+            DocumentCommand command = new AddCollaboratorCommand(document, collaborator);
+            loggedInUser.ExecuteCommand(document, command);
         }
 
         static void SetApprover(Document document)
@@ -761,20 +765,34 @@ namespace SDP_Assignment
 
             var user = users[username];
 
-            document.SetApprover(user);
+            if (user == null)
+            {
+                Console.WriteLine("Invalid approver.");
+                return;
+            }
+
+            if (document.Collaborators.Contains(user) || document.Owner == user)
+            {
+                Console.WriteLine("Approver cannot be a collaborator or owner.");
+                return;
+            }
+
+            DocumentCommand command = new SetApproverCommand(document, loggedInUser);
+            loggedInUser.ExecuteCommand(document, command);
         }
 
         static void SubmitDocument(Document document)
         {
-            if (loggedInUser != document.Owner)
+
+            if (document.Approver == null)
             {
-                Console.WriteLine("Only the document owner can submit the document for approval.");
-                Console.ReadLine();
+                Console.WriteLine("Please set an approver first!");
+                Console.WriteLine();
                 return;
             }
 
-            // Delegate to the state pattern
-            document.SubmitForApproval(loggedInUser);
+            DocumentCommand command = new SubmitCommand(document);
+            loggedInUser.ExecuteCommand(document, command);
             Console.WriteLine("Press Enter to continue.");
             Console.ReadLine();
         }

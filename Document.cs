@@ -33,7 +33,6 @@ namespace SDP_Assignment
         // Collaborators list now stores UserComponent (User or UserGroup)
         private List<UserComponent> collaborators = new List<UserComponent>();
 
-
         private DocumentVersionHistory versionHistory = new DocumentVersionHistory();
 
         public string Title
@@ -139,35 +138,6 @@ namespace SDP_Assignment
             Console.WriteLine("Finished editing. Version has been added to version history.");
         }
 
-        public void AddCollaborator(UserComponent collaborator)
-        {
-            if (IsOwnerOrCollaborator(collaborator))
-            {
-                Console.WriteLine($"{collaborator.Name} is already a collaborator.");
-                return;
-            }
-
-            if (collaborator is User user && approver == user)
-            {
-                Console.WriteLine("Approver cannot be added as a collaborator!");
-                return;
-            }
-
-            if (collaborator is UserGroup group)
-            {
-                collaborators.Add(group);
-                RegisterObserver(group);
-
-            }
-            else
-            {
-                RegisterObserver(collaborator);
-            }
-
-            ExecuteCommand(new AddCollaboratorCommand(this, collaborator));
-        }
-
-
         public void RemoveCollaborator(UserComponent collaborator) // UPDATED
         {
             if (!IsOwnerOrCollaborator(collaborator))
@@ -197,19 +167,6 @@ namespace SDP_Assignment
             {
                 Collaborators.Remove(collaborator);
                 RemoveObserver(collaborator);
-            }
-        }
-
-        public void Edit(List<string> section, User user, string action, string text = "", int lineNumber = -1)
-        {
-            if (IsOwnerOrCollaborator(user))
-            {
-                ExecuteCommand(new EditDocumentCommand(this, section, user, action, text, lineNumber));
-                AddVersion();
-            }
-            else
-            {
-                Console.WriteLine("Only owner or collaborators can edit.");
             }
         }
 
@@ -252,35 +209,6 @@ namespace SDP_Assignment
             }
         }
 
-        public void SubmitForApproval(User user)
-        {
-            if (approver == null)
-            {
-                Console.WriteLine("Please set an approver first!");
-                Console.WriteLine();
-                return;
-            }
-
-            ExecuteCommand(new SubmitCommand(this, ReviewState));
-        }
-
-        public void SetApprover(User user)
-        {
-            if (user == null)
-            {
-                Console.WriteLine("Invalid approver.");
-                return;
-            }
-
-            if (collaborators.Contains(user) || Owner == user)
-            {
-                Console.WriteLine("Approver cannot be a collaborator or owner.");
-                return;
-            }
-
-            ExecuteCommand(new SetApproverCommand(this, user));    
-        }
-
         public void ViewCollaborators()
         {
             Console.WriteLine($"=== Collaborators for Document: {Title} ===");
@@ -288,11 +216,6 @@ namespace SDP_Assignment
             {
                 Console.WriteLine($"{entry.Name}");
             }
-        }
-
-        public void EditContent(UserComponent user, string newContent)
-        {
-            NotifyObservers($"Document '{Title}' content updated by {user.Name}.");
         }
 
         public bool IsOwnerOrCollaborator(UserComponent userComponent)
@@ -319,7 +242,6 @@ namespace SDP_Assignment
 
             return false;
         }
-
 
         public void Approve()
         {
@@ -351,6 +273,7 @@ namespace SDP_Assignment
             }
             state.pushBack(comment);
         }
+
         public Document ConvertDocument()
         {
             if (formatConverter == null)
@@ -419,7 +342,6 @@ namespace SDP_Assignment
             }
         }
 
-        // Command Pattern --------------------------------------------------------------------------------------------
         public void ExecuteCommand(DocumentCommand command)
         {
             command.Execute();
