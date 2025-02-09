@@ -25,6 +25,13 @@ namespace SDP_Assignment
 
         public void submit()
         {
+            if (doc.Approver == null)
+            {
+                Console.WriteLine("Please set an approver first!");
+                Console.WriteLine();
+                return;
+            }
+
             if (!isEdited)
             {
                 Console.WriteLine("Document must be edited first!");
@@ -36,9 +43,18 @@ namespace SDP_Assignment
 
         public void setApprover(User collaborator)
         {
-            doc.NotifyObservers(collaborator + " has been added as approver.");
+            if (doc.Collaborators.Contains(collaborator) || doc.Owner == collaborator)
+            {
+                Console.WriteLine("Approver cannot be a collaborator or the owner!");
+                return;
+            }
+
+            if (collaborator != null)
+            {
+                doc.NotifyObservers(collaborator + " has been added as approver.");
+            }
+
             doc.Approver = collaborator;
-            doc.RegisterObserver(collaborator);
         }
 
         public void approve()

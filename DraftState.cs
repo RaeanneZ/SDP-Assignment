@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,23 +18,44 @@ namespace SDP_Assignment
 
         public void add(UserComponent collaborator)
         {
-            doc.NotifyObservers($"{collaborator.Name} has been added as collaborator.");
-            doc.Collaborators.Add(collaborator);
-            doc.RegisterObserver(collaborator);
+            if (!doc.Collaborators.Contains(collaborator))
+            {
+                doc.NotifyObservers($"{collaborator.Name} has been added as collaborator.");
+                doc.Collaborators.Add(collaborator);
+                doc.RegisterObserver(collaborator);
+            }
+            else
+            {
+                Console.WriteLine("User is already a collaborator!");
+            }
         }
 
         public void submit()
         {
+            if (doc.Approver == null)
+            {
+                Console.WriteLine("Please set an approver first!");
+                Console.WriteLine();
+                return;
+            }
+
             doc.NotifyObservers("Document '" + doc.Title + "' has been submitted for approval.");
             doc.SetState(doc.ReviewState);
         }
 
         public void setApprover(User collaborator)
         {
+            if (doc.Collaborators.Contains(collaborator) || doc.Owner == collaborator)
+            {
+                Console.WriteLine("Approver cannot be a collaborator or the owner!");
+                return;
+            }
+
             if (collaborator != null)
             {
                 doc.NotifyObservers(collaborator + " has been added as approver.");
             }
+
             doc.Approver = collaborator;
         }
 

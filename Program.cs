@@ -771,26 +771,12 @@ namespace SDP_Assignment
                 return;
             }
 
-            if (document.Collaborators.Contains(user) || document.Owner == user)
-            {
-                Console.WriteLine("Approver cannot be a collaborator or owner.");
-                return;
-            }
-
             DocumentCommand command = new SetApproverCommand(document, loggedInUser);
             loggedInUser.ExecuteCommand(document, command);
         }
 
         static void SubmitDocument(Document document)
         {
-
-            if (document.Approver == null)
-            {
-                Console.WriteLine("Please set an approver first!");
-                Console.WriteLine();
-                return;
-            }
-
             DocumentCommand command = new SubmitCommand(document);
             loggedInUser.ExecuteCommand(document, command);
             Console.WriteLine("Press Enter to continue.");
