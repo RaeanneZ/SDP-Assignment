@@ -239,7 +239,6 @@ namespace SDP_Assignment
             }
         }
 
-
         public void SetFooter(string newFooter, User user)
         {
             if (IsOwnerOrCollaborator(user))
@@ -255,12 +254,6 @@ namespace SDP_Assignment
 
         public void SubmitForApproval(User user)
         {
-            if (user != owner)
-            {
-                Console.WriteLine("Only the owner can submit this document for approval.");
-                return;
-            }
-
             if (approver == null)
             {
                 Console.WriteLine("Please set an approver first!");
@@ -279,15 +272,13 @@ namespace SDP_Assignment
                 return;
             }
 
-            if (collaborators.Contains(user))
+            if (collaborators.Contains(user) || Owner == user)
             {
-                Console.WriteLine("Approver cannot be a collaborator.");
+                Console.WriteLine("Approver cannot be a collaborator or owner.");
                 return;
             }
-            else
-            {
-                ExecuteCommand(new SetApproverCommand(this, user));
-            }
+
+            ExecuteCommand(new SetApproverCommand(this, user));    
         }
 
         public void ViewCollaborators()
@@ -332,6 +323,12 @@ namespace SDP_Assignment
 
         public void Approve()
         {
+            if (state != reviewState)
+            {
+                Console.WriteLine($"Document '{Title}'  must be under review to be approved.");
+                return;
+            }
+
             state.approve();
         }
 
