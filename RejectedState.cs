@@ -37,11 +37,9 @@ namespace SDP_Assignment
 
         public void setApprover(User collaborator)
         {
-            doc.SetApprover(collaborator);
-
-            //doc.NotifyObservers(collaborator + " has been added as approver.");
-            //doc.Approver = collaborator;
-            //doc.RegisterObserver(collaborator);
+            doc.NotifyObservers(collaborator + " has been added as approver.");
+            doc.Approver = collaborator;
+            doc.RegisterObserver(collaborator);
         }
 
         public void approve()

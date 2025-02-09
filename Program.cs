@@ -451,8 +451,9 @@ namespace SDP_Assignment
                 Console.WriteLine("4. Set Approver");
                 Console.WriteLine("5. Submit Document");
                 Console.WriteLine("6. Convert Document");
-                Console.WriteLine("7. Undo");
-                Console.WriteLine("8. Redo");
+                Console.WriteLine("7. View Version History");
+                Console.WriteLine("8. Undo");
+                Console.WriteLine("9. Redo");
                 Console.WriteLine("0. Back");
                 Console.Write("Choose an action: ");
 
@@ -473,6 +474,18 @@ namespace SDP_Assignment
                         break;
                     case "5":
                         SubmitDocument(document);
+                        break;
+                    case "6":
+                        ConvertDocument(document);
+                        break;
+                    case "7":
+                        ShowVersionHistoryMenu(document);
+                        break;
+                    case "8":
+                        document.UndoLastCommand();
+                        break;
+                    case "9":
+                        document.RedoLastCommand();
                         break;
                     case "0":
                         return;
@@ -731,19 +744,11 @@ namespace SDP_Assignment
                 return;
             }
 
-            // DELEGATE ADDING TO THE STATE
-            document.getState().add(collaborator);
+            document.AddCollaborator(collaborator);
         }
 
         static void SetApprover(Document document)
         {
-            if (loggedInUser != document.Owner)
-            {
-                Console.WriteLine("Only the document owner can set an approver.");
-                Console.ReadLine();
-                return;
-            }
-
             Console.Write("Enter approver username: ");
             var username = Console.ReadLine();
 
@@ -756,8 +761,7 @@ namespace SDP_Assignment
 
             var user = users[username];
 
-            // Delegate to state pattern
-            document.getState().setApprover(user);
+            document.SetApprover(user);
         }
 
         static void SubmitDocument(Document document)
@@ -770,7 +774,7 @@ namespace SDP_Assignment
             }
 
             // Delegate to the state pattern
-            document.getState().submit();
+            document.SubmitForApproval(loggedInUser);
             Console.WriteLine("Press Enter to continue.");
             Console.ReadLine();
         }
@@ -821,7 +825,6 @@ namespace SDP_Assignment
                 Console.ReadLine();
             }
         }
-
 
         static void DisplayOwnedDocuments(List<Document> documents)
         {

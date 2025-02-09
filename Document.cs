@@ -153,32 +153,15 @@ namespace SDP_Assignment
                 return;
             }
 
-            collaborators.Add(collaborator);
-            RegisterObserver(collaborator);
-
             if (collaborator is UserGroup group)
             {
-                // Add the group as a collaborator
                 collaborators.Add(group);
                 RegisterObserver(group);
 
-                //// Do not add duplicate names if already in the collaborator list
-                //foreach (var member in group.GetUsers())
-                //{
-                //    if (!collaborators.Contains(member))
-                //    {
-                //        collaborators.Add(member);
-                //        RegisterObserver(member);
-                //        NotifyObservers($"Collaborator '{member.Name}' from group '{group.Name}' added to document '{Title}'.");
-                //    }
-                //}
             }
             else
             {
-                // Add individual user as a collaborator
-                collaborators.Add(collaborator);
                 RegisterObserver(collaborator);
-                NotifyObservers($"Collaborator '{collaborator.Name}' added to document '{Title}'.");
             }
 
             ExecuteCommand(new AddCollaboratorCommand(this, collaborator));
@@ -207,14 +190,12 @@ namespace SDP_Assignment
                     {
                         collaborators.Remove(member);
                         RemoveObserver(member);
-                        NotifyObservers($"Collaborator '{member.Name}' from group '{group.Name}' removed from document '{Title}'.");
                     }
                 }
             }
             else
             {
                 Collaborators.Remove(collaborator);
-                NotifyObservers($"Collaborator '{collaborator.Name}' removed from document '{Title}'.");
                 RemoveObserver(collaborator);
             }
         }
@@ -295,12 +276,6 @@ namespace SDP_Assignment
             if (user == null)
             {
                 Console.WriteLine("Invalid approver.");
-                return;
-            }
-
-            if (owner != user)
-            {
-                Console.WriteLine("Only the document owner can set the approver.");
                 return;
             }
 

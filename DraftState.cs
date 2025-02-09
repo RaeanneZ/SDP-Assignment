@@ -17,7 +17,6 @@ namespace SDP_Assignment
 
         public void add(UserComponent collaborator)
         {
-            doc.AddCollaborator(collaborator);
             doc.NotifyObservers($"{collaborator.Name} has been added as collaborator.");
             doc.Collaborators.Add(collaborator);
             doc.RegisterObserver(collaborator);
@@ -35,7 +34,7 @@ namespace SDP_Assignment
             {
                 doc.NotifyObservers(collaborator + " has been added as approver.");
             }
-            doc.SetApprover(collaborator);
+            doc.Approver = collaborator;
         }
 
         public void approve()
