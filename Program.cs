@@ -115,6 +115,8 @@ namespace SDP_Assignment
                         ManageGroups();
                         break;
                     case "5":
+                        loggedInUser.commandHistory.Clear();
+                        loggedInUser.redoStacks.Clear();
                         Console.WriteLine("Logging out. Press Enter to continue.");
                         Console.ReadLine();
                         return;
@@ -771,7 +773,7 @@ namespace SDP_Assignment
                 return;
             }
 
-            DocumentCommand command = new SetApproverCommand(document, loggedInUser);
+            DocumentCommand command = new SetApproverCommand(document, user);
             loggedInUser.ExecuteCommand(document, command);
         }
 
