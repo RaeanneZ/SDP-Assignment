@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SDP_Assignment
 {
-    class RejectedState : DocState
+    public class RejectedState : DocState
     {
         private Document doc;
         private bool isEdited = false;
@@ -16,26 +16,45 @@ namespace SDP_Assignment
             doc = document;
         }
 
-        public void add(User collaborator)
+        public void add(UserComponent collaborator)
         {
+            doc.NotifyObservers($"{collaborator.Name} has been added as collaborator.");
             doc.Collaborators.Add(collaborator);
+            doc.RegisterObserver(collaborator);
         }
 
         public void submit()
         {
-            Console.WriteLine("Cannot submit a rejected document.");
+            if (doc.Approver == null)
+            {
+                Console.WriteLine("Please set an approver first!");
+                Console.WriteLine();
+                return;
+            }
+
+            if (!isEdited)
+            {
+                Console.WriteLine("Document must be edited first!");
+                return;
+            }
+            Console.WriteLine("Document resubmitted for review.");
+            doc.SetState(doc.ReviewState);
         }
 
         public void setApprover(User collaborator)
         {
-            if (doc.IsOwnerOrCollaborator(collaborator))
+            if (doc.Collaborators.Contains(collaborator) || doc.Owner == collaborator)
             {
-                Console.WriteLine("Error: Approver cannot be the owner or a collaborator.");
+                Console.WriteLine("Approver cannot be a collaborator or the owner!");
                 return;
             }
 
+            if (collaborator != null)
+            {
+                doc.NotifyObservers(collaborator + " has been added as approver.");
+            }
+
             doc.Approver = collaborator;
-            doc.NotifyObservers($"Approver assigned: {collaborator.Name} for document '{doc.Title}'.");
         }
 
         public void approve()
@@ -43,7 +62,7 @@ namespace SDP_Assignment
             Console.WriteLine("Cannot approve a rejected document.");
         }
 
-        public void reject()
+        public void reject(string reason)
         {
             Console.WriteLine("Document is already rejected.");
         }
@@ -53,19 +72,7 @@ namespace SDP_Assignment
             Console.WriteLine("Cannot push back a rejected document.");
         }
 
-        public void resubmit()
-        {
-            if (!isEdited)
-            {
-                Console.WriteLine("Document must be edited first!");
-                return;
-            }
-
-            Console.WriteLine("Document resubmitted for review.");
-            doc.SetState(doc.ReviewState);
-        }
-
-        public void edit(List<string> section, User collaborator)
+        public void edit(List<string> section, User collaborator, string action, string text = "", int lineNumber = -1)
         {
             if (!doc.IsOwnerOrCollaborator(collaborator))
             {
@@ -79,84 +86,45 @@ namespace SDP_Assignment
                 return;
             }
 
-            if (section.Count == 1)
+            switch (action)
             {
-                section.Clear();
-            }
+                case "add":
+                    section.Add(text);
+                    isEdited = true;
+                    break;
 
-            while (true)
-            {
-                Console.WriteLine("\nChoose an edit option:");
-                Console.WriteLine("1. Add a new line");
-                Console.WriteLine("2. Delete a line");
-                Console.WriteLine("3. Replace a line");
-                Console.WriteLine("4. Finish editing");
-
-                Console.Write("Enter your choice: ");
-                string choice = Console.ReadLine();
-
-                switch (choice)
-                {
-                    case "1":
-                        Console.Write("Enter text to add: ");
-                        string newText = Console.ReadLine();
-                        section.Add(newText);
-                        Console.WriteLine("Line added.");
+                case "remove":
+                    if (lineNumber >= 0 && lineNumber < section.Count)
+                    {
+                        section.RemoveAt(lineNumber);
+                        Console.WriteLine("Line deleted.");
                         isEdited = true;
-                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid line number.");
+                    }
+                    break;
 
-                    case "2":
-                        Console.WriteLine("Current content:");
-                        for (int i = 0; i < section.Count; i++)
-                        {
-                            Console.WriteLine($"{i}: {section[i]}");
-                        }
+                case "replace":
+                    if (lineNumber >= 0 && lineNumber < section.Count)
+                    {
+                        section[lineNumber] = text;
+                        Console.WriteLine("Line replaced.");
+                        isEdited = true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid line number.");
+                    }
+                    break;
 
-                        Console.Write("Enter the line number to delete: ");
-                        if (int.TryParse(Console.ReadLine(), out int deleteIndex) && deleteIndex >= 0 && deleteIndex < section.Count)
-                        {
-                            section.RemoveAt(deleteIndex);
-                            Console.WriteLine("Line deleted.");
-                            isEdited = true;
-                        }
-                        else
-                        {
-                            Console.WriteLine("Invalid line number.");
-                        }
-                        break;
-
-                    case "3":
-                        Console.WriteLine("Current content:");
-                        for (int i = 0; i < section.Count; i++)
-                        {
-                            Console.WriteLine($"{i}: {section[i]}");
-                        }
-
-                        Console.Write("Enter the line number to replace: ");
-                        if (int.TryParse(Console.ReadLine(), out int replaceIndex) && replaceIndex >= 0 && replaceIndex < section.Count)
-                        {
-                            Console.Write("Enter new text: ");
-                            string replaceText = Console.ReadLine();
-                            section[replaceIndex] = replaceText;
-                            Console.WriteLine("Line replaced.");
-                            isEdited = true;
-                        }
-                        else
-                        {
-                            Console.WriteLine("Invalid line number.");
-                        }
-                        break;
-
-                    case "4":
-                        Console.WriteLine("Editing complete.");
-                        doc.NotifyObservers($"Document '{doc.Title}' was edited by {collaborator.Name}.");
-                        return;
-
-                    default:
-                        Console.WriteLine("Invalid choice. Please select again.");
-                        break;
-                }
+                default:
+                    Console.WriteLine("Invalid action.");
+                    break;
             }
+
+            doc.NotifyObservers($"Document '{doc.Title}' was edited by {collaborator.Name}.");
         }
     }
 }

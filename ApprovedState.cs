@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SDP_Assignment
 {
-    class ApprovedState : DocState
+    public class ApprovedState : DocState
     {
         private Document doc;
 
@@ -15,7 +15,7 @@ namespace SDP_Assignment
             doc = document;
         }
 
-        public void add(User collaborator)
+        public void add(UserComponent collaborator)
         {
             Console.WriteLine("Cannot add collaborators to an approved document.");
         }
@@ -35,7 +35,7 @@ namespace SDP_Assignment
             Console.WriteLine("Document is already approved.");
         }
 
-        public void reject()
+        public void reject(string reason)
         {
             Console.WriteLine("Cannot reject an approved document.");
         }
@@ -45,12 +45,7 @@ namespace SDP_Assignment
             Console.WriteLine("Cannot push back an approved document.");
         }
 
-        public void resubmit()
-        {
-            Console.WriteLine("Cannot resubmit an approved document.");
-        }
-
-        public void edit(List<string> section, User collaborator)
+        public void edit(List<string> section, User collaborator, string action, string text = "", int lineNumber = -1)
         {
             Console.WriteLine("Cannot edit an approved document.");
         }

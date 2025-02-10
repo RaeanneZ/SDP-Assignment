@@ -22,7 +22,6 @@ namespace SDP_Assignment
         public void Execute()
         {
             doc.getState().setApprover(this.newApprover);
-            doc.NotifyObservers("Approver assigned for document.");
         }
 
         public void Undo()

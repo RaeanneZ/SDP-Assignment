@@ -1,18 +1,31 @@
-﻿using System;
+﻿using SDP_Assignment;
+using System;
 
-public class User : Observer
+public class User : UserComponent
 {
-    private string name;
-
-    public string Name { get; private set; }
-
     public User(string name)
     {
-        this.name = name;
+        Name = name;
     }
 
-    public virtual void Notify(string message)
+    public override void Notify(string message)
     {
         Console.WriteLine($"Notification for {Name}: {message}");
     }
+
+    public void ExecuteCommand(Document document, DocumentCommand command)
+    {
+        document.ExecuteCommand(command);  
+    }
+
+    public void UndoLastCommand(Document document)
+    {
+        document.UndoLastCommand();  
+    }
+
+    public void RedoLastCommand(Document document)
+    {
+        document.RedoLastCommand();  
+    }
+
 }
