@@ -7,7 +7,7 @@ namespace SDP_Assignment
     {
         static Dictionary<string, User> users = new Dictionary<string, User>(); // Stores individual users
         static Dictionary<string, UserGroup> groups = new Dictionary<string, UserGroup>(); // Stores user groups
-        static List<Document> documents = new List<Document>();
+        static DocumentCollection documents = new DocumentCollection(); // Store documents using DocumentCollection
         static User loggedInUser;
 
         static void Main(string[] args)
@@ -152,7 +152,7 @@ namespace SDP_Assignment
             Console.Write("Enter the document title: ");
             var title = Console.ReadLine();
             var document = factory.CreateDocument(title, loggedInUser);
-            documents.Add(document);
+            documents.AddDocument(document);
             Console.WriteLine("Document created successfully. Press Enter to return to the menu.");
             Console.ReadLine();
         }
@@ -331,10 +331,10 @@ namespace SDP_Assignment
                 switch (decision)
                 {
                     case "1":
-                        DisplayOwnedDocuments(documents);
+                        DisplayOwnedDocuments();
                         break;
                     case "2":
-                        DisplayAccessibleDocuments(documents);
+                        DisplayAccessibleDocuments();
                         break;
                     case "0":
                         return;
@@ -342,20 +342,26 @@ namespace SDP_Assignment
                         Console.WriteLine("Invalid option. Press Enter to try again.");
                         Console.ReadLine();
                         continue;
-
                 }
 
-            
+                if (documents.GetUserDocuments(loggedInUser).Count() == 0)
+                {
+                    Console.WriteLine("No documents available!");
+                    Console.WriteLine("Press Enter to return to the menu.");
+                    Console.ReadLine();
+                    continue;
+                }
+
                 Console.Write("Select a document (Enter number): ");
 
                 if (int.TryParse(Console.ReadLine(), out int choice))
                 {
                     if (choice == 0)
                         return;
-
-                    if (choice > 0 && choice <= documents.Count)
+                    var selectedDocuments = documents.GetUserDocuments(loggedInUser).ToList();
+                    if (choice > 0 && choice <= selectedDocuments.Count)
                     {
-                        Document selectedDocument = documents[choice - 1];
+                        Document selectedDocument = selectedDocuments[choice - 1];
                         if (selectedDocument.Approver == loggedInUser)
                         {
                             ApproverActions(selectedDocument);
@@ -370,17 +376,19 @@ namespace SDP_Assignment
                     {
                         Console.WriteLine("Invalid selection. Press Enter to try again.");
                         Console.ReadLine();
+                        continue;
                     }
                 }
                 else
                 {
                     Console.WriteLine("Invalid input. Press Enter to try again.");
                     Console.ReadLine();
+                    continue;
                 }
-            
+
 
                 // Iterate over a COPY of the list to avoid modification issues
-                foreach (var doc in documents.ToList()) // <-- Add .ToList()
+                foreach (var doc in documents.GetDocuments()) // <-- Add .ToList()
                 {
                     if (doc.IsAssociatedWithUser(loggedInUser))
                     {
@@ -823,81 +831,54 @@ namespace SDP_Assignment
 
                 // Perform the conversion
                 Document convertedDocument = document.ConvertDocument();
-                documents.Add(convertedDocument);
+                documents.AddDocument(convertedDocument);
 
                 Console.WriteLine("Document converted. Press Enter to continue.");
                 Console.ReadLine();
             }
         }
 
-        static void DisplayOwnedDocuments(List<Document> documents)
+        static void DisplayOwnedDocuments()
         {
-            int x = 0;
+            Console.Clear();
             Console.WriteLine("=== Your documents ===");
-            for (int i = 0; i < documents.Count; i++)
+            var ownedDocs = documents.GetUserDocuments(loggedInUser, isOwnerCheck: true);
+            if (!ownedDocs.Any())
             {
-                Document doc = documents[i];
-                if (doc.Owner == loggedInUser)
+                Console.WriteLine("No documents owned!");
+                Console.WriteLine("Press Enter to return to the menu.");
+                Console.ReadLine();
+                return;
+            }
+            else
+            {
+                int index = 1;
+                foreach (var doc in ownedDocs)
                 {
-                    string docType = documents[i].GetType().Name.Replace("Document", "");
-                    Console.WriteLine($"{i + 1}. [{docType}] {documents[i].Title} [State: {documents[i].CurrentStateName}]");
-                    x++;
+                    Console.WriteLine($"{index++}. [{doc.GetType().Name.Replace("Document", "")}] {doc.Title} [State: {doc.CurrentStateName}]");
                 }
-                if (x == 0)
-                {
-                    Console.WriteLine("No documents owned!");
-                }
-
             }
         }
 
-        static void DisplayAccessibleDocuments(List<Document> documents)
+        static void DisplayAccessibleDocuments()
         {
-            int x = 0;
-            Console.WriteLine("=== Your documents ===");
-
-            foreach (var doc in documents)
-            {
-                // Check if the user is the owner, approver, or a direct collaborator
-                if (doc.Owner == loggedInUser || doc.Approver == loggedInUser)
-                {
-                    string docType = doc.GetType().Name.Replace("Document", "");
-                    Console.WriteLine($"{++x}. [{docType}] {doc.Title} [State: {doc.CurrentStateName}]");
-                    continue;
-                }
-
-                // Check if the logged-in user is part of a group stored in collaborators
-                bool isGroupMember = false;
-
-                foreach (var collaborator in doc.Collaborators)
-                {
-                    if (collaborator is UserGroup group)
-                    {
-                        // Check if the user is part of the group
-                        if (group.GetUsers().Contains(loggedInUser))
-                        {
-                            isGroupMember = true;
-                            break;
-                        }
-                    }
-                    else if (collaborator == loggedInUser)
-                    {
-                        // Check if the user is directly in the collaborators list
-                        isGroupMember = true;
-                        break;
-                    }
-                }
-
-                if (isGroupMember)
-                {
-                    string docType = doc.GetType().Name.Replace("Document", "");
-                    Console.WriteLine($"{++x}. [{docType}] {doc.Title} [State: {doc.CurrentStateName}]");
-                }
-            }
-
-            if (x == 0)
+            Console.Clear();
+            Console.WriteLine("=== Your accessible documents ===");
+            var accessibleDocs = documents.GetUserDocuments(loggedInUser);
+            if (!accessibleDocs.Any())
             {
                 Console.WriteLine("No documents accessible!");
+                Console.WriteLine("Press Enter to return to the menu.");
+                Console.ReadLine();
+                return;
+            }
+            else
+            {
+                int index = 1;
+                foreach (var doc in accessibleDocs)
+                {
+                    Console.WriteLine($"{index++}. [{doc.GetType().Name.Replace("Document", "")}] {doc.Title} [State: {doc.CurrentStateName}]");
+                }
             }
         }
     }

@@ -3,6 +3,8 @@ using System;
 
 public class User : UserComponent
 {
+    private DocumentCollection documentCollection = new DocumentCollection();
+
     public User(string name)
     {
         Name = name;
@@ -26,6 +28,16 @@ public class User : UserComponent
     public void RedoLastCommand(Document document)
     {
         document.RedoLastCommand();  
+    }
+
+    public void AddDocument(Document document)
+    {
+        documentCollection.AddDocument(document);
+    }
+
+    public IDocumentIterator GetDocumentIterator()
+    {
+        return documentCollection.CreateIterator();
     }
 
 }
