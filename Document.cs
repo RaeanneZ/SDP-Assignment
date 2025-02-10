@@ -111,6 +111,8 @@ namespace SDP_Assignment
 
             RegisterObserver(owner);
             state = draftState;
+
+            owner.AddDocument(this);
         }
 
         // State Pattern
