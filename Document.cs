@@ -25,10 +25,7 @@ namespace SDP_Assignment
         private readonly DocState approvedState;
         private readonly DocState rejectedState;
         private readonly DocState reviseState;
-
-        // Commands
-        private Stack<DocumentCommand> commandHistory = new Stack<DocumentCommand>();
-        private Stack<DocumentCommand> redoStack = new Stack<DocumentCommand>();
+        public bool IsPushedBack;
 
         // Collaborators list now stores UserComponent (User or UserGroup)
         private List<UserComponent> collaborators = new List<UserComponent>();
@@ -71,11 +68,6 @@ namespace SDP_Assignment
             get { return rejectedState; }
         }
 
-        public DocState ReviseState
-        {
-            get { return reviseState; }
-        }
-
         public List<string> GetHeader()
         {
             return header;
@@ -107,10 +99,10 @@ namespace SDP_Assignment
             reviewState = new ReviewState(this);
             approvedState = new ApprovedState(this);
             rejectedState = new RejectedState(this);
-            reviseState = new ReviseState(this);
 
             RegisterObserver(owner);
             state = draftState;
+            IsPushedBack = false;
         }
 
         // State Pattern
@@ -340,42 +332,6 @@ namespace SDP_Assignment
             {
                 observer.Notify(message); // Works for both User and UserGroup
             }
-        }
-
-        public void ExecuteCommand(DocumentCommand command)
-        {
-            command.Execute();
-            commandHistory.Push(command);
-        }
-
-        public void UndoLastCommand()
-        {
-            if (commandHistory.Count > 0)
-            {
-                DocumentCommand command = commandHistory.Pop();
-                command.Undo();
-                redoStack.Push(command);
-            }
-            else
-            {
-                Console.WriteLine("No command to undo!");
-            }
-            Console.WriteLine();
-        }
-
-        public void RedoLastCommand()
-        {
-            if (redoStack.Count > 0)
-            {
-                DocumentCommand command = redoStack.Pop();
-                command.Redo();
-                commandHistory.Push(command);
-            }
-            else
-            {
-                Console.WriteLine("No command to redo!");
-            }
-            Console.WriteLine();
         }
 
         public List<DocumentVersion> GetVersions()

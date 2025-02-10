@@ -10,6 +10,7 @@ namespace SDP_Assignment
     public class DraftState : DocState
     {
         private Document doc;
+        private bool isEdited = false;
 
         public DraftState(Document document)
         {
@@ -37,6 +38,15 @@ namespace SDP_Assignment
                 Console.WriteLine("Please set an approver first!");
                 Console.WriteLine();
                 return;
+            }
+
+            if (doc.IsPushedBack == true)
+            {
+                if (isEdited == false)
+                {
+                    Console.WriteLine("Document must be edited first before it can be resubmitted!");
+                    return;
+                }
             }
 
             doc.NotifyObservers("Document '" + doc.Title + "' has been submitted for approval.");
@@ -92,6 +102,10 @@ namespace SDP_Assignment
             {
                 case "add":
                     section.Add(text);
+                    if (doc.IsPushedBack == true)
+                    {
+                        isEdited = true;
+                    }
                     Console.WriteLine("Line added.");
                     break;
 
@@ -99,6 +113,10 @@ namespace SDP_Assignment
                     if (lineNumber >= 0 && lineNumber < section.Count)
                     {
                         section.RemoveAt(lineNumber);
+                        if (doc.IsPushedBack == true)
+                        {
+                            isEdited = true;
+                        }
                         Console.WriteLine("Line deleted.");
                     }
                     else
@@ -111,6 +129,10 @@ namespace SDP_Assignment
                     if (lineNumber >= 0 && lineNumber < section.Count)
                     {
                         section[lineNumber] = text;
+                        if (doc.IsPushedBack == true)
+                        {
+                            isEdited = true;
+                        }
                         Console.WriteLine("Line replaced.");
                     }
                     else
