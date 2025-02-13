@@ -5,7 +5,7 @@ using System.Xml.Linq;
 
 namespace SDP_Assignment
 {
-    public class Document : Subject
+    public class Document : IDocument, Subject
     {
         private List<Observer> observers = new List<Observer>();
         private IFormatConverter formatConverter;

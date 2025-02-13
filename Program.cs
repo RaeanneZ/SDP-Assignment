@@ -528,7 +528,9 @@ namespace SDP_Assignment
             Console.WriteLine("1. Header");
             Console.WriteLine("2. Content");
             Console.WriteLine("3. Footer");
-            Console.WriteLine("4. Cancel");
+            Console.WriteLine("4. Add Signature (Your Name)");
+            Console.WriteLine("5. Add Watermark");
+            Console.WriteLine("0. Cancel");
             Console.Write("Enter choice: ");
 
             var choice = Console.ReadLine();
@@ -549,6 +551,16 @@ namespace SDP_Assignment
                     DisplayEditMenu(document, footer, loggedInUser);
                     break;
                 case "4":
+                    SignatureDecorator signedDoc = new SignatureDecorator(document);
+                    signedDoc.SetFooter(loggedInUser.Name, loggedInUser);
+                    break;
+                case "5":
+                    Console.Write("Text for Watermark: ");
+                    string watermark = Console.ReadLine();
+                    WatermarkDecorator watermarkDoc = new WatermarkDecorator(document, watermark);
+                    watermarkDoc.SetHeader(watermark, loggedInUser);
+                    break;
+                case "0":
                     Console.WriteLine();
                     return;
                 default:
