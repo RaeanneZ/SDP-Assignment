@@ -48,7 +48,8 @@ namespace SDP_Assignment
         public void pushBack(string comment)
         {
             doc.NotifyObservers("Document needs revision: " + comment);
-            doc.SetState(doc.ReviseState);
+            doc.IsPushedBack = true;
+            doc.SetState(doc.DraftState);
         }
 
         public void edit(List<string> section, User collaborator, string action, string text = "", int lineNumber = -1)

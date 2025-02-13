@@ -1,9 +1,11 @@
 ﻿using SDP_Assignment;
-using System;
+using System.Xml.Linq;
 
 public class User : UserComponent
 {
     private DocumentCollection documentCollection = new DocumentCollection();
+    public Dictionary<Document, Stack<DocumentCommand>> commandHistory = new Dictionary<Document, Stack<DocumentCommand>>();
+    public Dictionary<Document, Stack<DocumentCommand>> redoStacks = new Dictionary<Document, Stack<DocumentCommand>>();
 
     public User(string name)
     {
@@ -17,17 +19,43 @@ public class User : UserComponent
 
     public void ExecuteCommand(Document document, DocumentCommand command)
     {
-        document.ExecuteCommand(command);  
+        if (!commandHistory.ContainsKey(document))
+        {
+            commandHistory[document] = new Stack<DocumentCommand>();
+            redoStacks[document] = new Stack<DocumentCommand>();
+        }
+
+        command.Execute();
+        commandHistory[document].Push(command);
+        redoStacks[document].Clear(); 
     }
 
     public void UndoLastCommand(Document document)
     {
-        document.UndoLastCommand();  
+        if (commandHistory.ContainsKey(document) && commandHistory[document].Count > 0)
+        {
+            DocumentCommand command = commandHistory[document].Pop();
+            command.Undo();
+            redoStacks[document].Push(command);
+        }
+        else
+        {
+            Console.WriteLine($"{Name} has no actions to undo for this document!");
+        }
     }
 
     public void RedoLastCommand(Document document)
     {
-        document.RedoLastCommand();  
+        if (redoStacks.ContainsKey(document) && redoStacks[document].Count > 0)
+        {
+            DocumentCommand command = redoStacks[document].Pop();
+            command.Redo();
+            commandHistory[document].Push(command);
+        }
+        else
+        {
+            Console.WriteLine($"{Name} has no actions to redo for this document!");
+        }
     }
 
     public void AddDocument(Document document)
