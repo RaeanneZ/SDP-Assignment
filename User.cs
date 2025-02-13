@@ -3,6 +3,7 @@ using System.Xml.Linq;
 
 public class User : UserComponent
 {
+    private DocumentCollection documentCollection = new DocumentCollection();
     public Dictionary<Document, Stack<DocumentCommand>> commandHistory = new Dictionary<Document, Stack<DocumentCommand>>();
     public Dictionary<Document, Stack<DocumentCommand>> redoStacks = new Dictionary<Document, Stack<DocumentCommand>>();
 
@@ -56,4 +57,15 @@ public class User : UserComponent
             Console.WriteLine($"{Name} has no actions to redo for this document!");
         }
     }
+
+    public void AddDocument(Document document)
+    {
+        documentCollection.AddDocument(document);
+    }
+
+    public IDocumentIterator GetDocumentIterator()
+    {
+        return documentCollection.CreateIterator();
+    }
+
 }
