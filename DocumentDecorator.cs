@@ -6,26 +6,26 @@ using System.Threading.Tasks;
 
 namespace SDP_Assignment
 {
-    public abstract class DocumentDecorator : IDocument
+    public abstract class DocumentDecorator : DocumentBase
     {
-        protected IDocument document;
+        protected DocumentBase document;
 
-        public DocumentDecorator(IDocument document)
+        public DocumentDecorator(DocumentBase document)
         {
             this.document = document;
         }
 
-        public virtual void SetHeader(string newHeader, User user)
+        public override void SetHeader(string newHeader, User user)
         {
             document.SetHeader(newHeader, user);
         }
 
-        public virtual void SetContent(string newContent, User user)
+        public override void SetContent(string newContent, User user)
         {
             document.SetContent(newContent, user);
         }
 
-        public virtual void SetFooter(string newFooter, User user)
+        public override void SetFooter(string newFooter, User user)
         {
             document.SetFooter(newFooter, user);
         }

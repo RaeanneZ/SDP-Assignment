@@ -5,7 +5,7 @@ using System.Xml.Linq;
 
 namespace SDP_Assignment
 {
-    public class Document : IDocument, Subject
+    public class Document : DocumentBase, Subject
     {
         private List<Observer> observers = new List<Observer>();
         private IFormatConverter formatConverter;
@@ -163,7 +163,7 @@ namespace SDP_Assignment
             }
         }
 
-        public void SetHeader(string newHeader, User user)
+        public override void SetHeader(string newHeader, User user)
         {
             if (IsOwnerOrCollaborator(user))
             {
@@ -176,7 +176,7 @@ namespace SDP_Assignment
             }
         }
 
-        public void SetContent(string newContent, User user)
+        public override void SetContent(string newContent, User user)
         {
             if (IsOwnerOrCollaborator(user))
             {
@@ -189,7 +189,7 @@ namespace SDP_Assignment
             }
         }
 
-        public void SetFooter(string newFooter, User user)
+        public override void SetFooter(string newFooter, User user)
         {
             if (IsOwnerOrCollaborator(user))
             {
