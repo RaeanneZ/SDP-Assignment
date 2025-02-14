@@ -17,7 +17,11 @@ namespace SDP_Assignment
 
         public override void Add(UserComponent user)
         {
-            members.Add(user);
+            if (!members.Contains(user))
+            {
+                members.Add(user);
+                user.Notify($"You have been added to the group '{Name}'.");
+            }
         }
 
         public override void Remove(UserComponent user)
