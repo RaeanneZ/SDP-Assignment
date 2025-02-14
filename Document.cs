@@ -20,11 +20,10 @@ namespace SDP_Assignment
 
         // Document states
         private DocState state;
-        private readonly DocState draftState;
-        private readonly DocState reviewState;
-        private readonly DocState approvedState;
-        private readonly DocState rejectedState;
-        private readonly DocState reviseState;
+        private DocState draftState;
+        private DocState reviewState;
+        private DocState approvedState;
+        private DocState rejectedState;
         public bool IsPushedBack;
 
         // Collaborators list now stores UserComponent (User or UserGroup)
