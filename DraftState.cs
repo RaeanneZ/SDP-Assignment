@@ -21,9 +21,26 @@ namespace SDP_Assignment
         {
             if (!doc.Collaborators.Contains(collaborator))
             {
-                doc.NotifyObservers($"{collaborator.Name} has been added as collaborator.");
                 doc.Collaborators.Add(collaborator);
                 doc.RegisterObserver(collaborator);
+
+                if (collaborator is UserGroup group)
+                {
+                    // Notify each member individually without group-level notification
+                    foreach (var member in group.GetUsers())
+                    {
+                        if (!doc.Collaborators.Contains(member))
+                        {
+                            doc.Collaborators.Add(member);
+                            doc.RegisterObserver(member);
+                            member.Notify($"You have been added to the document '{doc.Title}' as part of the group '{group.Name}'.");
+                        }
+                    }
+                }
+                else
+                {
+                    collaborator.Notify($"You have been added to the document '{doc.Title}'.");
+                }
             }
             else
             {
